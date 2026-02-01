@@ -1,0 +1,32 @@
+module = {statement};
+
+statement = (var_def
+        |   call | assignment) "\n";
+        
+var_def = data_type ":" name ("=" expression | ";");
+
+
+call = name "(" expression {"," expression} ")";
+
+assignment = name "=" expression;
+
+block = "{" {statement} "}";
+
+if_stmt = if "(" expression ")" block;
+
+while_stmt = while "(" expression ")" block; 
+
+
+expression = logical;
+
+logical = additive {("&&" | "||" | "<" | ">" ) additive};
+
+additive = multiplicative {("+"|"-") multiplicative};
+
+multiplicative = prefix {("*" | "/") prefix};
+
+prefix = [("-" | "!")] postfix;
+
+postfix = primary ("(" expression ")");
+
+primary = name | number | "(" expression ")";

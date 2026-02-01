@@ -1,0 +1,5 @@
+int:test = 3 - 2
+
+flt:second = 3*(5-test)+56+(-1)
+
+int:empty;
