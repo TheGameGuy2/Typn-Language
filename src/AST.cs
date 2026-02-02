@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using IR;
 using Lexing;
 
@@ -46,9 +47,11 @@ public class BinOp : ASTNode
 
     public override void MakeInstruction(IRBuilder builder)
     {
-        left.MakeInstruction(builder);
         right.MakeInstruction(builder);
-        builder.MakeArithmetic(value);
+        left.MakeInstruction(builder);
+
+        
+        builder.MakeOperator(IRBuilder.GetInstrFromOp(value));
 
     }
     
@@ -76,11 +79,19 @@ public class Number : ASTNode
 
     public override void MakeInstruction(IRBuilder builder)
     {
-
-
-        Token dataType = new Token(TokenType.DataType, value.type switch { TokenType.INum => "int", TokenType.FNum => "float", _ => "INVALID"});
+        IRDataType type = IRDataType.None;
+        
+        if(value.type == TokenType.FNum)
+        {
+            type = IRDataType.Float;
+        }
+        else if(value.type == TokenType.INum)
+        {
+            type = IRDataType.Int;
+        }
+        
         //This is so stupid I have to manage data types smarter somehow.
-        builder.MakePush(value, dataType);
+        builder.MakeConstant(value.value, type);
     }
 }
 
@@ -98,6 +109,14 @@ public class NegateNode : ASTNode
     {
         base.Show(depth);
         expr.Show(depth + 1);
+    }
+
+    public override void MakeInstruction(IRBuilder builder)
+    {
+        expr.MakeInstruction(builder);
+        
+        //think this through...
+
     }
 
 }
@@ -135,7 +154,7 @@ public class Name : ASTNode
 
     public override void MakeInstruction(IRBuilder builder)
     {
-
+        builder.MakeLoad(value.value);
     }
 
 }
@@ -165,15 +184,14 @@ public class VariableNode : ASTNode
     {
         if(varValue.value.type == TokenType.Null)
         {
-            builder.MakeDefine(name, dataType);
+            builder.MakeDefine(name.value, IRBuilder.GetDTFromToken(dataType));
             return;
         }
 
         varValue.MakeInstruction(builder);
 
-
-        builder.MakeDefine(name, dataType);
-        builder.MakeSet(name);
+        builder.MakeDefine(name.value, IRBuilder.GetDTFromToken(dataType));
+        builder.MakeSet(name.value);
     }
 
 }
@@ -194,6 +212,12 @@ public class AssignNode : ASTNode
     {
         base.Show(depth);
         assignExpr.Show(depth + 1);
+    }
+
+    public override void MakeInstruction(IRBuilder builder)
+    {
+        assignExpr.MakeInstruction(builder);
+        builder.MakeSet(name.value);
     }
 }
 
@@ -224,6 +248,21 @@ public class CallNode : ASTNode
             node.Show(depth + 1);
         }
     }
+
+    public override void MakeInstruction(IRBuilder builder)
+    {
+        foreach(ASTNode node in callExpr)
+        {
+            node.MakeInstruction(builder);
+        }
+        
+        if(caller.value.type != TokenType.Name)
+        {
+            throw new Exception($"[AST] Can not call {caller.value}");
+        }
+
+        builder.MakeCall(caller.value.value);
+    }
 }
 
 public class BlockNode : ASTNode
@@ -248,6 +287,14 @@ public class BlockNode : ASTNode
             node.Show(depth + 1);
         }
     }
+
+    public override void MakeInstruction(IRBuilder builder)
+    {
+        foreach(ASTNode node in statements)
+        {
+            node.MakeInstruction(builder);
+        }
+    }
 }
 
 public class IfNode : ASTNode
@@ -268,6 +315,22 @@ public class IfNode : ASTNode
         expr.Show(depth + 1);
         body.Show(depth + 1);
 
+    }
+
+    public override void MakeInstruction(IRBuilder builder)
+    {
+        expr.MakeInstruction(builder); //this creates a compare
+        //Issue: We need to know what gets compared in above expr
+        string labelName = builder.NewLabelName();
+
+        //TODO: Determine based on operation above (based on expr, == jne, != je, < jl, >jg etc.)
+        //Wait no, you only jump if the logic above is 0 or false, make a comp for that!
+        builder.MakeJmpNEQ(labelName); 
+
+        body.MakeInstruction(builder);
+        
+        builder.MakeLabel(labelName);
+        builder.ClearLabel(labelName);
     }
 }
 

@@ -14,8 +14,6 @@ public enum InstrType : byte
     Sub,
     Div,
     Set,
-    Push,
-    Pop,
     Call,
     CallNative,
     CompEQ,
@@ -23,7 +21,12 @@ public enum InstrType : byte
     CompGE,
     CompG,
     CompL,
-
+    Push,
+    Load,
+    Je,
+    Jne,
+    Jl,
+    Jg
 
 }
 
@@ -43,20 +46,18 @@ public enum IRDataType
 
 public class IRValue
 {
-    private readonly IRValueType type;
-    public IRDataType dataType { get; private set; }
+    public readonly IRValueType type;
     public string value { get; private set; }
 
-    public IRValue(string value, IRValueType type, IRDataType dataType)
+    public IRValue(string value, IRValueType type)
     {
         this.value = value;
         this.type = type;
-        this.dataType = dataType;
     }
 
     public override string ToString()
     {
-        return $"[{dataType} {value}]";
+        return $"[{value}]";
     }
 }
 
@@ -78,9 +79,19 @@ public class Instruction
         values.Add(value);
     }
 
+    public IRValue GetValue()
+    {
+        if(values.Count == 0)
+        {
+            return new IRValue("ERROR", IRValueType.Var);
+        }
+        return values[0];
+    }
+
     public override string ToString()
     {
         string instStr = $"{type} {instrDataType} ";
+
         foreach(IRValue value in values)
         {
             instStr += value.ToString() + " ";
@@ -97,12 +108,15 @@ public class IRBuilder
 
     private List<Instruction> instructions = new();
 
-    private Dictionary<string, int> nativeFuncMap =  new();
+    //variables stores all defined variables and their types for typechecking
+    private Dictionary<string, IRDataType> variables = new();
 
-    public IRBuilder()
-    {
-        nativeFuncMap["print"] = 0;
-    }
+    private Instruction currentLabelJump;
+
+    private Dictionary<string, int> labelDict = new();
+    private Dictionary<string, List<Instruction>> labelSubscribers = new();
+
+    private int labelCounter = -1;
 
 
     public void ShowInstructions()
@@ -113,79 +127,207 @@ public class IRBuilder
         }
     }
 
-    private static IRDataType GetDTFromToken(Token dataType)
+
+
+    public string NewLabelName()
     {
-        return dataType.value switch
+        labelCounter++;
+        return $"_L{labelCounter}";
+    }
+
+    public List<Instruction> GetInstructions()
+    {
+        return instructions;
+    }
+
+    public static IRDataType GetDTFromToken(Token dataType)
+    {
+        string value = dataType.value;
+
+        if(value == DataTypes.Int)
         {
-            "int" => IRDataType.Int,
-            "float" => IRDataType.Float,
-            "bool" => IRDataType.Bool,
-            _ => throw new Exception($"[IR Gen] Can not get datatype from vlaue {dataType.value}"),
-        };
-    }
-
-    public void MakeDefine(Token var_name, Token dataType)
-    {
-        Instruction newInst = new(InstrType.Define);
-        newInst.AddValue(new IRValue(var_name.value, IRValueType.Var,GetDTFromToken(dataType)));
+            return IRDataType.Int;
+        }
+        else if(value == DataTypes.Float)
+        {
+            return IRDataType.Float;
+        }
+        else if (value == DataTypes.Bool)
+        {
+            return IRDataType.Bool;
+        }
+        else
+        {
+            throw new Exception($"[IR Gen] Can not get datatype from vlaue {dataType.value}");
+        }
         
-        instructions.Add(newInst);
     }
 
-    public void MakeArithmetic(Token op)
+    public static InstrType GetInstrFromOp(Token op)
     {
-
-        InstrType type = op.type switch
+        return op.type switch
         {
             TokenType.Plus => InstrType.Add,
             TokenType.Sub => InstrType.Sub,
             TokenType.Mul => InstrType.Mul,
             TokenType.Div => InstrType.Div,
-            _ => throw new Exception($"[IR Gen] Invalid operator token {op}")
+            _ => throw new Exception($"[IR Gen] Can not get Instruction from token: {op}")
         };
-
-        Instruction newInstr = new(type);
-
-        instructions.Add(newInstr);
-
-
     }
 
-    public void MakeSet(Token varName)
+
+    //Start label beginns label mode, means the current instruction will get an address as a value when EndLabel is called
+    public void StartLabel()
     {
-        Instruction newInstr = new(InstrType.Set);
-        //Set pops value at the top and writes it to var
-        newInstr.AddValue(new IRValue(varName.value, IRValueType.Var, IRDataType.None));
-        
-        instructions.Add(newInstr);
+        currentLabelJump = instructions[^1];
     }
 
-    public void MakeCall(Token name, List<IRValue> args)
+    //creates a label after the current instruction
+    /// <summary>
+    ///  Places a label at the current position
+    /// </summary>
+    /// <param name="name"></param>
+    public void MakeLabel(string name)
     {
-        Instruction newInst;
-        if(nativeFuncMap.ContainsKey(name.value))
+        labelDict[name] = instructions.Count;
+    }
+
+    private void SubscribeToLabel(Instruction subscriber, string labelName)
+    {
+        if(labelDict.ContainsKey(labelName))
         {
-            newInst = new(InstrType.CallNative);
-
-            newInst.AddValue(new IRValue(nativeFuncMap[name.value].ToString(),IRValueType.Var,IRDataType.None));
-
-            foreach(IRValue value in args)
+            subscriber.AddValue(new IRValue(labelDict[labelName].ToString(), IRValueType.Const));
+        }
+        else
+        {
+            labelSubscribers.TryGetValue(labelName, out List<Instruction>? waitingSubs);
+            if(waitingSubs != null)
             {
-                newInst.AddValue(value);
+                labelSubscribers[labelName].Add(subscriber);
+            }
+            else
+            {
+                labelSubscribers[labelName] = new List<Instruction>();
+
+                labelSubscribers[labelName].Add(subscriber);
             }
         }
     }
 
-    public void MakePush(Token value, Token dataType)
+    public void ClearLabel(string name)
     {
-        Instruction newInstr = new Instruction(InstrType.Push, GetDTFromToken(dataType));
-
-        //I hope god can forgive me this sin.
-        newInstr.AddValue(new IRValue(value.value, value.type == TokenType.Name ? IRValueType.Var : IRValueType.Const, GetDTFromToken(dataType)));
-
-        instructions.Add(newInstr);
+        List<Instruction> subs = labelSubscribers[name];
+        foreach(Instruction inst in subs)
+        {
+            inst.AddValue(new IRValue(labelDict[name].ToString(),IRValueType.Const));
+        }
+        labelSubscribers[name].Clear();
+        labelDict.Remove(name);
     }
 
+    //Assigns the later created labels to all subscribers
+    //public void FinishLabels()
+    //{
+    //    //Don't ask me what this does I have no Idea. Just call it after you're done with labels.
+    //    foreach(KeyValuePair<string,List<Instruction>> subs in labelSubscribers)
+    //    {
+    //        if (!labelDict.ContainsKey(subs.Key)) { throw new Exception($"[IR Gen] Label {subs.Key} not found at label clean."); }
+    //        
+    //        foreach(Instruction inst in subs.Value)
+    //        {
+    //            inst.AddValue(new IRValue(labelDict[subs.Key].ToString(),IRValueType.Const));
+    //        }
+    //    }
+    //    //labelDict.Clear();
+    //    //labelSubscribers.Clear();
+    //    
+    //}
 
+    public void MakeCmpEq()
+    {
+        instructions.Add(new Instruction(InstrType.CompEQ));
+    }
+
+    public void MakeJmpEQ(string jmpLabel)
+    {
+        Instruction instr = new Instruction(InstrType.Je);
+        instructions.Add(instr);
+        SubscribeToLabel(instr, jmpLabel);
+    }
+
+    public void MakeJmpNEQ(string jmpLabel)
+    {
+        Instruction instr = new Instruction(InstrType.Jne);
+        instructions.Add(instr);
+        SubscribeToLabel(instr, jmpLabel);
+    }
+
+    public void MakeLoad(string name)
+    {
+        if(!variables.ContainsKey(name))
+        {
+            throw new Exception($"[IR Gen] Trying to access unexisting variable {name}");
+        }
+
+        Instruction instr = new(InstrType.Load, variables[name]);
+
+        instr.AddValue(new IRValue(name, IRValueType.Var));
+
+        instructions.Add(instr);
+    }
+
+    public void MakeConstant(string value, IRDataType dataType)
+    {
+        Instruction instr = new(InstrType.Push, dataType);
+        instr.AddValue(new IRValue(value, IRValueType.Const));
+
+        instructions.Add(instr);
+    }
+
+    public void MakeDefine(string name, IRDataType dataType)
+    {
+        if(variables.ContainsKey(name))
+        {
+            throw new Exception($"[IR Gen] Redefining variable {name}. Redefining is not allowed. Context based resolution is WIP.");
+        }
+
+        variables[name] = dataType;
+
+        Instruction instr = new(InstrType.Define, dataType);
+        instr.AddValue(new IRValue(name, IRValueType.Var));
+
+        instructions.Add(instr);
+    }
+
+    public void MakeOperator(InstrType op)
+    {
+        Instruction instr = new(op, instructions[^1].instrDataType);
+
+        instructions.Add(instr);
+    }
+
+    public void MakeCall(string name)
+    {
+        //TODO functions
+        
+        Instruction instr = new(InstrType.Call);
+        instr.AddValue(new IRValue(name,IRValueType.Var));
+
+        instructions.Add(instr);
+    }
+
+    public void MakeSet(string name)
+    {
+        if(!variables.ContainsKey(name))
+        {
+           
+            throw new Exception($"[IR Gen] Trying to set unexisting variable {name}");
+        }
+
+        Instruction instr = new Instruction(InstrType.Set, variables[name]);
+        instr.AddValue(new IRValue(name, IRValueType.Var));
+        
+        instructions.Add(instr);
+    }
 
 }

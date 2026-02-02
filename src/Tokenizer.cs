@@ -17,7 +17,7 @@ public class Tokenizer
     private char[] doubleOperators = ['=','<','>','!','&','|'];
     private char[] specialSkipChars = ['\t',' '];
 
-    
+
 
 
     public Tokenizer(string code)
@@ -41,9 +41,9 @@ public class Tokenizer
         tokenMap['<'] = new Token(TokenType.Lesser, "<");
         tokenMap['>'] = new Token(TokenType.Greater, ">");
 
-        keywordMap["int"] = new Token(TokenType.DataType, "int");
-        keywordMap["flt"] = new Token(TokenType.DataType, "float");
-        keywordMap["bol"] = new Token(TokenType.DataType, "bool");
+        keywordMap["int"] = new Token(TokenType.DataType, DataTypes.Int);
+        keywordMap["flt"] = new Token(TokenType.DataType, DataTypes.Float);
+        keywordMap["bol"] = new Token(TokenType.DataType, DataTypes.Bool);
 
         keywordMap["=="] = new Token(TokenType.CompEqual,"==");
         keywordMap["!="] = new Token(TokenType.NotEqual, "!=");
@@ -54,6 +54,11 @@ public class Tokenizer
 
         keywordMap["if"] = new Token(TokenType.If, "if");
         keywordMap["while"] = new Token(TokenType.While, "while");
+    }
+
+    private bool IsNameLetter(char c)
+    {
+        return char.IsAsciiLetter(c) || c == '_';
     }
 
     private char Consume()
@@ -86,7 +91,14 @@ public class Tokenizer
         {
 
             char curChar = code[current];
-            
+
+            if (curChar == '#') { break; }
+
+            if(curChar == '/' && Peek() == '/')
+            {
+                while(Consume() != '\n'){}
+            }
+
             if(char.IsDigit(curChar))
             {
                 tokens.Add(MakeNumber());
@@ -204,7 +216,7 @@ public class Tokenizer
         {
             name += code[current];
         }
-        while (char.IsAsciiLetter(Consume()));
+        while (IsNameLetter(Consume()));
 
 
         return keywordMap.ContainsKey(name) ? keywordMap[name] : new Token(TokenType.Name, name);

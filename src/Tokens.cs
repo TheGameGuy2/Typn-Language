@@ -37,6 +37,14 @@ public enum TokenType
     EOF
 }
 
+public static class DataTypes
+{
+    public readonly static string Int = "int";
+    public readonly static string Float = "float";
+    public readonly static string Bool = "bool";
+
+}
+
 public struct Token
 {
     public TokenType type;

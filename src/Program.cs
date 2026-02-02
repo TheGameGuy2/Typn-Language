@@ -1,6 +1,7 @@
 ﻿using IR;
 using Lexing;
 using Parsing;
+using Runner;
 using System.IO;
 
 Console.WriteLine("Hello, World!");
@@ -29,6 +30,10 @@ foreach(ASTNode node in nodes)
     node.Show(0);
 }
 
+
+
+Console.WriteLine("--- Stage 1 IR ---");
+
 IRBuilder builder = new();
 
 foreach(ASTNode node in nodes)
@@ -36,8 +41,10 @@ foreach(ASTNode node in nodes)
     node.MakeInstruction(builder);
 }
 
-Console.WriteLine("--- Stage 1 IR ---");
-
 builder.ShowInstructions();
 
+return;
+Console.WriteLine("--- Executing ---");
+VM vm = new VM(builder.GetInstructions());
+vm.Run();
 //Console.WriteLine(p.ParseExpression().MakeInstruction());
