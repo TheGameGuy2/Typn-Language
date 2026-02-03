@@ -1,10 +1,16 @@
 
-flt:hi = 4
+flt:hi = 0
 flt:ih = 10
 
-while(hi+ih)
+while(hi)
 {
-    hi = hi - 1 
+    //TODO: Make compare set compare flag 0-> equal, 1 larger, -1, smaller,
+    //Make jmpEQ and jmp only 2 jumps
+    //jmpEQ jumps if cmp flag is 0
+    //make compareLess & compareGreater push value of compare on stack
+    //compare reads top value of stack
+    //hi = hi - 1 
+    
     print(67)
 }
 

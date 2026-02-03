@@ -363,8 +363,11 @@ public class WhileNode : ASTNode
         string endLabel = builder.NewLabelName();
         
         builder.MakeLabel(startLabel);
+
         expr.MakeInstruction(builder);
+        
         builder.MakeCmp();
+        
         builder.MakeJmpNEQ(endLabel);
         
         body.MakeInstruction(builder);
@@ -372,7 +375,7 @@ public class WhileNode : ASTNode
         builder.MakeJump(startLabel);
         builder.MakeLabel(endLabel);
 
-        builder.ClearLabel(startLabel);
+        //builder.ClearLabel(startLabel);
         builder.ClearLabel(endLabel);
 
 

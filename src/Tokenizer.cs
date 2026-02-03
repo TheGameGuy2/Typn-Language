@@ -131,7 +131,8 @@ public class Tokenizer
             }
             else if(!specialSkipChars.Contains(curChar))
             {
-                throw new Exception($"[Lexer] Unexpected character {curChar}");
+                Console.WriteLine($"[Lexer] Warning, unexpected char \"{curChar}\"");
+                //throw new Exception($"[Lexer] Unexpected character '{curChar}'");
             }
             
 

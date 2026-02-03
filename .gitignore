@@ -16,6 +16,9 @@
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
+#Windows VSCode files I don't need 
+.sln 
+
 # Mono auto generated files
 mono_crash.*
 

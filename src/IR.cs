@@ -204,9 +204,7 @@ public class IRBuilder
             }
             else
             {
-                labelSubscribers[labelName] = new List<Instruction>();
-
-                labelSubscribers[labelName].Add(subscriber);
+                labelSubscribers[labelName] = [subscriber];
             }
         }
     }
