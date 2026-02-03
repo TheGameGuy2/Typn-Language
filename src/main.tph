@@ -1,17 +1,26 @@
 
-flt:hi = 0
-flt:ih = 10
+int:hi = 10
+int:ih = 0
 
-while(hi)
+while(hi*hi)
 {
     //TODO: Make compare set compare flag 0-> equal, 1 larger, -1, smaller,
     //Make jmpEQ and jmp only 2 jumps
     //jmpEQ jumps if cmp flag is 0
     //make compareLess & compareGreater push value of compare on stack
     //compare reads top value of stack
-    //hi = hi - 1 
+    hi = hi - 1 
     
-    print(67)
+    ih = ih+1
+
+    print(hi)//check whats going on with hi.
+
+    print(67) 
+}
+
+if((16-6)+10*2-29)
+{
+    print(111)
 }
 
 

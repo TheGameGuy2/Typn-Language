@@ -319,7 +319,10 @@ public class IfNode : ASTNode
 
     public override void MakeInstruction(IRBuilder builder)
     {
+
+        builder.MakeConstant("0",IRDataType.Int);
         expr.MakeInstruction(builder); 
+
 
         builder.MakeCmp(); 
 
@@ -327,7 +330,8 @@ public class IfNode : ASTNode
 
         //TODO: Determine based on operation above (based on expr, == jne, != je, < jl, >jg etc.)
         //Wait no, you only jump if the logic above is 0 or false, make a comp for that!
-        builder.MakeJmpNEQ(labelName); 
+        builder.MakeJmpLess(labelName);
+        builder.MakeJmpEQ(labelName);
 
         body.MakeInstruction(builder);
         
@@ -365,10 +369,12 @@ public class WhileNode : ASTNode
         builder.MakeLabel(startLabel);
 
         expr.MakeInstruction(builder);
-        
+
+        builder.MakeConstant("0", IRDataType.Int);
+
         builder.MakeCmp();
         
-        builder.MakeJmpNEQ(endLabel);
+        builder.MakeJmpGreater(endLabel);
         
         body.MakeInstruction(builder);
 

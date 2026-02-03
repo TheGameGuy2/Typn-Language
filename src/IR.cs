@@ -20,10 +20,11 @@ public enum InstrType : byte
     Push,
     Load,
     Jmp,
-    Je,
+    Je, //jump equal
     Jne,
+    Jg,
     Jl,
-    Jg
+
 
 }
 
@@ -254,10 +255,25 @@ public class IRBuilder
         SubscribeToLabel(instr, jmpLabel);
     }
 
+    //Compares the top values of the stack, sets comp flag to result.
     public void MakeCmp()
     {
         Instruction instr = new(InstrType.Comp);
         instructions.Add(instr);
+    }
+
+    public void MakeJmpLess(string jmpLabel)
+    {
+        Instruction instr = new Instruction(InstrType.Jl);
+        instructions.Add(instr);
+        SubscribeToLabel(instr, jmpLabel);
+    }
+
+    public void MakeJmpGreater(string jmpLabel)
+    {
+        Instruction instr = new Instruction(InstrType.Jg);
+        instructions.Add(instr);
+        SubscribeToLabel(instr, jmpLabel);
     }
 
     public void MakeJmpNEQ(string jmpLabel)

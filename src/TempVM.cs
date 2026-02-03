@@ -12,7 +12,7 @@ namespace Runner
 
         private Dictionary<string, IRValue> vars = new();
 
-        private sbyte compareFlag = 0;
+        private sbyte compareFlag = -1;
 
         public VM(List<Instruction> instructions)
         {
@@ -30,7 +30,7 @@ namespace Runner
                 IRValue curVal = curOp.GetValue();
 
                 
-                /*Console.WriteLine($"Executing: {curOp}");
+                Console.WriteLine($"Executing: {curOp}");
                 Console.WriteLine("--S--");
                 foreach(IRValue value in values.ToArray())
                 {
@@ -38,7 +38,7 @@ namespace Runner
                 }
                 Console.WriteLine("-----");
                 Console.ReadKey();
-                  */
+                  
 
                 switch(curOp.type)
                 {
@@ -78,14 +78,15 @@ namespace Runner
                     case InstrType.Div:
                         DoArith(curOp.type);
                         break;
-
+                    
                     case InstrType.Comp: 
                         int iCval = int.Parse(values.Pop().value);
-                        if(iCval>0)
+                        int iCval2 = int.Parse(values.Pop().value);
+                        if(iCval>iCval2)
                         {
                             compareFlag = 1;
                         }
-                        else if(iCval<0)
+                        else if(iCval<iCval2)
                         {
                             compareFlag = -1;
                         }
@@ -94,14 +95,29 @@ namespace Runner
                             compareFlag = 0;
                         }
                         break;
+
                     case InstrType.Jne:
                         if(compareFlag!=0)
                         {
                             current = int.Parse(curVal.value);
                         }
                         break;
+
                     case InstrType.Je:
                         if(compareFlag==0)
+                        {
+                            current = int.Parse(curVal.value);
+                        }
+                        break;
+
+                    case InstrType.Jg:
+                        if(compareFlag>0)
+                        {
+                            current = int.Parse(curVal.value);
+                        }
+                        break;
+                    case InstrType.Jl:
+                        if(compareFlag<0)
                         {
                             current = int.Parse(curVal.value);
                         }
