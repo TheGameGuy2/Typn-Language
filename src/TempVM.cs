@@ -12,6 +12,8 @@ namespace Runner
 
         private Dictionary<string, IRValue> vars = new();
 
+        private sbyte compareFlag = 0;
+
         public VM(List<Instruction> instructions)
         {
             ops = instructions.ToArray();
@@ -27,8 +29,8 @@ namespace Runner
                 Instruction curOp = ops[current];
                 IRValue curVal = curOp.GetValue();
 
-                /*
-                Console.WriteLine($"Executing: {curOp}");
+                
+                /*Console.WriteLine($"Executing: {curOp}");
                 Console.WriteLine("--S--");
                 foreach(IRValue value in values.ToArray())
                 {
@@ -36,7 +38,8 @@ namespace Runner
                 }
                 Console.WriteLine("-----");
                 Console.ReadKey();
-                  */              
+                  */
+
                 switch(curOp.type)
                 {
                     case InstrType.Push:
@@ -74,6 +77,37 @@ namespace Runner
                         break;
                     case InstrType.Div:
                         DoArith(curOp.type);
+                        break;
+
+                    case InstrType.Comp: 
+                        int iCval = int.Parse(values.Pop().value);
+                        if(iCval>0)
+                        {
+                            compareFlag = 1;
+                        }
+                        else if(iCval<0)
+                        {
+                            compareFlag = -1;
+                        }
+                        else
+                        {
+                            compareFlag = 0;
+                        }
+                        break;
+                    case InstrType.Jne:
+                        if(compareFlag!=0)
+                        {
+                            current = int.Parse(curVal.value);
+                        }
+                        break;
+                    case InstrType.Je:
+                        if(compareFlag==0)
+                        {
+                            current = int.Parse(curVal.value);
+                        }
+                        break;
+                    case InstrType.Jmp:
+                        current = int.Parse(curVal.value);
                         break;
                 }
 

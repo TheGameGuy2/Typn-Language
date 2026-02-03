@@ -1,15 +1,13 @@
 
 flt:hi = 4
-flt:ih = 4
+flt:ih = 10
 
-if(23+54)
+while(hi+ih)
 {
-    if(22)
-    {
-        print(ih)
-    }
-    print(hi)
+    hi = hi - 1 
+    print(67)
 }
+
 
 #
 if(a+b == 67) //Do arithmetic, add compare, start label

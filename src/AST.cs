@@ -319,8 +319,10 @@ public class IfNode : ASTNode
 
     public override void MakeInstruction(IRBuilder builder)
     {
-        expr.MakeInstruction(builder); //this creates a compare
-        //Issue: We need to know what gets compared in above expr
+        expr.MakeInstruction(builder); 
+
+        builder.MakeCmp(); 
+
         string labelName = builder.NewLabelName();
 
         //TODO: Determine based on operation above (based on expr, == jne, != je, < jl, >jg etc.)
@@ -352,6 +354,27 @@ public class WhileNode : ASTNode
         base.Show(depth);
         expr.Show(depth + 1);
         body.Show(depth + 1);
+
+    }
+
+    public override void MakeInstruction(IRBuilder builder)
+    {
+        string startLabel = builder.NewLabelName();
+        string endLabel = builder.NewLabelName();
+        
+        builder.MakeLabel(startLabel);
+        expr.MakeInstruction(builder);
+        builder.MakeCmp();
+        builder.MakeJmpNEQ(endLabel);
+        
+        body.MakeInstruction(builder);
+
+        builder.MakeJump(startLabel);
+        builder.MakeLabel(endLabel);
+
+        builder.ClearLabel(startLabel);
+        builder.ClearLabel(endLabel);
+
 
     }
 }

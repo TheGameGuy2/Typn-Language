@@ -16,13 +16,10 @@ public enum InstrType : byte
     Set,
     Call,
     CallNative,
-    CompEQ,
-    CompLE,
-    CompGE,
-    CompG,
-    CompL,
+    Comp,
     Push,
     Load,
+    Jmp,
     Je,
     Jne,
     Jl,
@@ -189,7 +186,7 @@ public class IRBuilder
     /// <param name="name"></param>
     public void MakeLabel(string name)
     {
-        labelDict[name] = instructions.Count;
+        labelDict[name] = instructions.Count-1;
     }
 
     private void SubscribeToLabel(Instruction subscriber, string labelName)
@@ -217,6 +214,7 @@ public class IRBuilder
     public void ClearLabel(string name)
     {
         List<Instruction> subs = labelSubscribers[name];
+        
         foreach(Instruction inst in subs)
         {
             inst.AddValue(new IRValue(labelDict[name].ToString(),IRValueType.Const));
@@ -243,9 +241,12 @@ public class IRBuilder
     //    
     //}
 
-    public void MakeCmpEq()
+    
+    public void MakeJump(string jmpLabel)
     {
-        instructions.Add(new Instruction(InstrType.CompEQ));
+        Instruction instr = new Instruction(InstrType.Jmp);
+        instructions.Add(instr);
+        SubscribeToLabel(instr, jmpLabel);
     }
 
     public void MakeJmpEQ(string jmpLabel)
@@ -253,6 +254,12 @@ public class IRBuilder
         Instruction instr = new Instruction(InstrType.Je);
         instructions.Add(instr);
         SubscribeToLabel(instr, jmpLabel);
+    }
+
+    public void MakeCmp()
+    {
+        Instruction instr = new(InstrType.Comp);
+        instructions.Add(instr);
     }
 
     public void MakeJmpNEQ(string jmpLabel)

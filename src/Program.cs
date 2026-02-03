@@ -43,7 +43,7 @@ foreach(ASTNode node in nodes)
 
 builder.ShowInstructions();
 
-return;
+
 Console.WriteLine("--- Executing ---");
 VM vm = new VM(builder.GetInstructions());
 vm.Run();
