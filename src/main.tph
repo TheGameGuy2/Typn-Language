@@ -1,27 +1,31 @@
 
-int:hi = 10
-int:ih = 0
 
-while(hi*hi)
+int:count = 1
+
+int:one = 0
+int:two = 1
+
+
+while(count<=(count*count/count - (0-0+1-1+count) + 1)) 
 {
-    //TODO: Make compare set compare flag 0-> equal, 1 larger, -1, smaller,
-    //Make jmpEQ and jmp only 2 jumps
-    //jmpEQ jumps if cmp flag is 0
-    //make compareLess & compareGreater push value of compare on stack
-    //compare reads top value of stack
-    hi = hi - 1 
     
-    ih = ih+1
+    count = count + 1
 
-    print(hi)//check whats going on with hi.
+    int:temp = one
 
-    print(67) 
+    one = two
+    two = two + temp
+    
 }
 
-if((16-6)+10*2-29)
+if(two < -2)
 {
-    print(111)
+    print(67)
 }
+
+
+print(two)
+
 
 
 #

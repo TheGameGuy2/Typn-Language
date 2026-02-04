@@ -1,3 +1,5 @@
+using System.Diagnostics;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.Marshalling;
 using IR;
@@ -24,12 +26,15 @@ namespace Runner
             
             int current = 0;
 
+            
+
             while(current<ops.Length)
             {
+
                 Instruction curOp = ops[current];
                 IRValue curVal = curOp.GetValue();
 
-                
+                /*
                 Console.WriteLine($"Executing: {curOp}");
                 Console.WriteLine("--S--");
                 foreach(IRValue value in values.ToArray())
@@ -38,7 +43,7 @@ namespace Runner
                 }
                 Console.WriteLine("-----");
                 Console.ReadKey();
-                  
+                  */
 
                 switch(curOp.type)
                 {
@@ -60,10 +65,8 @@ namespace Runner
                         break;
                         
                     case InstrType.Call:
-                        if(curVal.value == "print")
-                        {
-                            Console.WriteLine(values.Pop().value);   
-                        }
+                        
+                        DoCall(curVal.value);
                         break;
 
                     case InstrType.Add:
@@ -78,7 +81,11 @@ namespace Runner
                     case InstrType.Div:
                         DoArith(curOp.type);
                         break;
-                    
+
+                    case InstrType.Not:
+                        DoNot(curOp.type);
+                        break;
+
                     case InstrType.Comp: 
                         int iCval = int.Parse(values.Pop().value);
                         int iCval2 = int.Parse(values.Pop().value);
@@ -128,9 +135,42 @@ namespace Runner
                 }
 
                 current++;
+                
             }
 
         }
+
+
+        private void DoCall(string func)
+        {
+            if(func == "print")
+            {
+                Console.WriteLine(values.Pop().value);   
+            }
+            else if(func == "helloWorld_Print")
+            {
+                Console.WriteLine("Sometimes I dream of saving the world.\nSaving everyone from the invisible hand.");
+            }
+            else if(func == "sq")
+            {
+                int val = int.Parse(values.Pop().value);
+                
+                values.Push(new IRValue((val*val).ToString(),IRValueType.Const));
+            }
+        }
+        
+
+        private void DoNot(InstrType type) //the cat
+        {
+            
+            
+            int val = int.Parse(values.Pop().value);
+            
+
+            values.Push(new IRValue((val<0 ? 1 : 0).ToString(),IRValueType.Const));
+        
+        }
+
 
         //Todo: type checking
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -138,6 +178,7 @@ namespace Runner
         {
             IRValue val1 = values.Pop();
             IRValue val2 = values.Pop();
+            
             
             int x = int.Parse(val1.value);
             int y = int.Parse(val2.value);

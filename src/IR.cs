@@ -13,6 +13,10 @@ public enum InstrType : byte
     Mul,
     Sub,
     Div,
+    Not,
+    And,
+    Or,
+
     Set,
     Call,
     CallNative,
@@ -169,10 +173,17 @@ public class IRBuilder
             TokenType.Sub => InstrType.Sub,
             TokenType.Mul => InstrType.Mul,
             TokenType.Div => InstrType.Div,
+            TokenType.And => InstrType.And,
+            TokenType.Or => InstrType.Or,
+            TokenType.Not => InstrType.Not,
             _ => throw new Exception($"[IR Gen] Can not get Instruction from token: {op}")
         };
     }
 
+    public IRDataType GetLastDT()
+    {
+        return instructions[^1].instrDataType;
+    }
 
     //Start label beginns label mode, means the current instruction will get an address as a value when EndLabel is called
     public void StartLabel()
@@ -240,13 +251,32 @@ public class IRBuilder
     //    
     //}
 
+
+    public void MakeNot()
+    {
+        Instruction instr = new Instruction(InstrType.Not,IRDataType.Bool);
+        instructions.Add(instr);
+    }
+
+    public void MakeAnd()
+    {
+        Instruction instr = new Instruction(InstrType.And,IRDataType.Bool);
+        instructions.Add(instr);
+    }
     
+    public void MakeOr()
+    {
+        Instruction instr = new Instruction(InstrType.Or,IRDataType.Bool);
+        instructions.Add(instr);
+    }
+
     public void MakeJump(string jmpLabel)
     {
         Instruction instr = new Instruction(InstrType.Jmp);
         instructions.Add(instr);
         SubscribeToLabel(instr, jmpLabel);
     }
+
 
     public void MakeJmpEQ(string jmpLabel)
     {
@@ -258,7 +288,7 @@ public class IRBuilder
     //Compares the top values of the stack, sets comp flag to result.
     public void MakeCmp()
     {
-        Instruction instr = new(InstrType.Comp);
+        Instruction instr = new(InstrType.Comp,instructions[^1].instrDataType);
         instructions.Add(instr);
     }
 

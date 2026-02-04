@@ -1,4 +1,6 @@
 using System.ComponentModel;
+using System.Globalization;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using IR;
 using Lexing;
@@ -19,9 +21,38 @@ public class ASTNode
         Console.WriteLine($"{dist}{value}");
     }
 
-    public virtual void MakeInstruction(IRBuilder builder)
+    public virtual void MakeInstruction(IRBuilder builder){}
+
+    public virtual bool IsComparison()
     {
-        
+        return false;
+    }
+
+    public void MakeConditionalJump(TokenType compOp, IRBuilder builder, string label)
+    {
+        switch(compOp)
+        {
+            case TokenType.Lesser:
+                builder.MakeJmpGreater(label);
+                builder.MakeJmpEQ(label);
+                break;
+            case TokenType.LessEqual:
+                builder.MakeJmpGreater(label);
+                break;
+            case TokenType.Greater:
+                builder.MakeJmpLess(label);
+                builder.MakeJmpEQ(label);
+                break;
+            case TokenType.GreaterEqual:
+                builder.MakeJmpLess(label);
+                break;
+            case TokenType.Equal:
+                builder.MakeJmpNEQ(label);
+                break;
+            case TokenType.NotEqual:
+                builder.MakeJmpEQ(label);
+                break;
+        }
     }
 }
 
@@ -30,11 +61,27 @@ public class BinOp : ASTNode
     public ASTNode left;
     public ASTNode right;
 
+    private bool isCompare = false;
+
+    private static TokenType[] compTypes = [TokenType.CompEqual,
+                                            TokenType.NotEqual,
+                                            TokenType.Lesser,
+                                            TokenType.LessEqual,
+                                            TokenType.Greater,
+                                            TokenType.GreaterEqual,
+                                            ];
+    private static TokenType[] logicalTypes = [TokenType.And, TokenType.Or];
+
     public BinOp(ASTNode left, ASTNode op, ASTNode right)
     {
         this.left = left;
         this.right = right;
         this.value = op.value;
+
+        if(compTypes.Contains(op.value.type))
+        {
+            isCompare = true;
+        }
         
     }
 
@@ -43,6 +90,7 @@ public class BinOp : ASTNode
         base.Show(depth);
         left.Show(depth+1);
         right.Show(depth+1);
+
     }
 
     public override void MakeInstruction(IRBuilder builder)
@@ -50,9 +98,18 @@ public class BinOp : ASTNode
         right.MakeInstruction(builder);
         left.MakeInstruction(builder);
 
-        
-        builder.MakeOperator(IRBuilder.GetInstrFromOp(value));
+        if(!isCompare)
+        {
+            builder.MakeOperator(IRBuilder.GetInstrFromOp(value));
+        }
 
+        
+
+    }
+
+    public override bool IsComparison()
+    {
+        return isCompare;
     }
     
 
@@ -113,11 +170,30 @@ public class NegateNode : ASTNode
 
     public override void MakeInstruction(IRBuilder builder)
     {
-        expr.MakeInstruction(builder);
+        if(expr is Number)
+        {
+            switch(expr.value.type)
+            {
+                case TokenType.FNum:
+                    builder.MakeConstant((-1*float.Parse(expr.value.value,CultureInfo.InvariantCulture)).ToString(), IRDataType.Float);
+                    break;
+                case TokenType.INum:
+                    builder.MakeConstant((-1*int.Parse(expr.value.value)).ToString(), IRDataType.Int);
+                    break;
+            }
+        }
+        else
+        {
+            expr.MakeInstruction(builder);
+            builder.MakeConstant("-1",builder.GetLastDT());
+            builder.MakeOperator(IRBuilder.GetInstrFromOp(new Token(TokenType.Mul, "*")));
+        }
+
         
-        //think this through...
 
     }
+
+    
 
 }
 
@@ -134,6 +210,17 @@ public class NotNode : ASTNode
     {
         base.Show(depth);
         expr.Show(depth + 1);
+    }
+
+    public override void MakeInstruction(IRBuilder builder)
+    {
+        expr.MakeInstruction(builder);
+        builder.MakeNot();
+    }
+
+    public override bool IsComparison()
+    {
+        return true;
     }
 }
 
@@ -320,18 +407,39 @@ public class IfNode : ASTNode
     public override void MakeInstruction(IRBuilder builder)
     {
 
-        builder.MakeConstant("0",IRDataType.Int);
-        expr.MakeInstruction(builder); 
+        //builder.MakeConstant("0",IRDataType.Int);
+        
 
-
-        builder.MakeCmp(); 
 
         string labelName = builder.NewLabelName();
 
+        if(expr.IsComparison())
+        {
+            expr.MakeInstruction(builder); 
+
+            builder.MakeCmp();
+            TokenType compType = expr.value.type;
+            MakeConditionalJump(compType, builder, labelName);
+
+        }
+        else
+        {
+            builder.MakeConstant("0", builder.GetLastDT());
+
+            expr.MakeInstruction(builder); 
+
+            builder.MakeCmp();
+            
+            builder.MakeJmpLess(labelName);
+            builder.MakeJmpEQ(labelName);
+            
+        }
+
+
+
         //TODO: Determine based on operation above (based on expr, == jne, != je, < jl, >jg etc.)
         //Wait no, you only jump if the logic above is 0 or false, make a comp for that!
-        builder.MakeJmpLess(labelName);
-        builder.MakeJmpEQ(labelName);
+        
 
         body.MakeInstruction(builder);
         
@@ -368,14 +476,29 @@ public class WhileNode : ASTNode
         
         builder.MakeLabel(startLabel);
 
-        expr.MakeInstruction(builder);
-
-        builder.MakeConstant("0", IRDataType.Int);
-
-        builder.MakeCmp();
         
-        builder.MakeJmpGreater(endLabel);
-        
+
+
+        if(expr.IsComparison())
+        {
+            expr.MakeInstruction(builder);
+            builder.MakeCmp();
+            TokenType compType = expr.value.type;
+            MakeConditionalJump(compType, builder, endLabel);
+            
+        }
+        else
+        {
+            builder.MakeConstant("0", builder.GetLastDT());
+
+            expr.MakeInstruction(builder);
+            
+            builder.MakeCmp();
+
+            builder.MakeJmpLess(endLabel);
+            builder.MakeJmpEQ(endLabel);
+        }
+
         body.MakeInstruction(builder);
 
         builder.MakeJump(startLabel);
