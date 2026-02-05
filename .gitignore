@@ -17,7 +17,8 @@
 *.userprefs
 
 #Windows VSCode files I don't need 
-.sln 
+*.sln 
+*.localnotes
 
 # Mono auto generated files
 mono_crash.*
