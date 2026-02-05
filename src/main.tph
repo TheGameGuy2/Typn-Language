@@ -1,5 +1,12 @@
 
 
+###
+ Compare operators should do their logic on the top 2 values of stack
+ push 1 if true, 0 if false
+ cmp pushes 0, compares with vlaue.
+ JumpG and jump are the only jumps we need.
+###
+
 int:count = 1
 
 int:one = 0
@@ -26,31 +33,3 @@ if(two < -2)
 
 print(two)
 
-
-
-#
-if(a+b == 67) //Do arithmetic, add compare, start label
-{ //label mode
-    
-    print(67)
-} 
-
-//End label, current label gets next instruction as address
-
-while(a==b) //make cmp, start label, make jump
-{
-    print(67)
-}
-//end 
-
-//_start
-//cmp
-//jmp ne _end
-
-//...
-
-//jmp _start
-//_end
-
-//!! Make label registry dict<string,int> and make end label clear it.
-//Or make list, and add label requireing instructions to it, then on label end assign label to all instr.

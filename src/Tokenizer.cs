@@ -92,7 +92,14 @@ public class Tokenizer
 
             char curChar = code[current];
 
-            if (curChar == '#') { break; }
+            if (curChar == '#')
+            {
+                Consume();
+                if(curChar == '#' && Peek() == '#')
+                {
+                    MakeMultiLineComment();
+                }
+            }
 
             if(curChar == '/' && Peek() == '/')
             {
@@ -144,6 +151,24 @@ public class Tokenizer
         }
         tokens.Add(new Token(TokenType.EOF, "EOF"));
         return tokens;
+    }
+
+    private void MakeMultiLineComment()
+    {
+        while(true)
+        {
+            char cur = Consume();
+            
+            if(cur == '#' && Peek() == '#')
+            {
+                Consume();
+                if(Peek() == '#')
+                {
+                    Consume();
+                    return;
+                }
+            }
+        }
     }
 
     private Token MakeDoubleOp()
