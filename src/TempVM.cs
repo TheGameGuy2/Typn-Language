@@ -88,12 +88,12 @@ namespace Runner
 
                     case InstrType.Comp: 
                         int iCval = int.Parse(values.Pop().value);
-                        int iCval2 = int.Parse(values.Pop().value);
-                        if(iCval>iCval2)
+                        
+                        if(iCval>0)
                         {
                             compareFlag = 1;
                         }
-                        else if(iCval<iCval2)
+                        else if(iCval<0)
                         {
                             compareFlag = -1;
                         }
@@ -103,35 +103,69 @@ namespace Runner
                         }
                         break;
 
-                    case InstrType.Jne:
-                        if(compareFlag!=0)
-                        {
-                            current = int.Parse(curVal.value);
-                        }
+                    case InstrType.CmpEq:
+                        DoValueCompare(curOp.type);
+                        break;
+                    case InstrType.CmpG:
+                        DoValueCompare(curOp.type);
+                        break;
+                    case InstrType.CmpGEq:
+                        DoValueCompare(curOp.type);
+                        break;
+                    case InstrType.CmpLEq:
+                        DoValueCompare(curOp.type);
+                        break;
+                    case InstrType.CmpL:
+                        DoValueCompare(curOp.type);
                         break;
 
-                    case InstrType.Je:
-                        if(compareFlag==0)
-                        {
-                            current = int.Parse(curVal.value);
-                        }
-                        break;
-
-                    case InstrType.Jg:
-                        if(compareFlag>0)
-                        {
-                            current = int.Parse(curVal.value);
-                        }
-                        break;
-                    case InstrType.Jl:
-                        if(compareFlag<0)
-                        {
-                            current = int.Parse(curVal.value);
-                        }
-                        break;
                     case InstrType.Jmp:
                         current = int.Parse(curVal.value);
                         break;
+                    
+                    case InstrType.JmpTrue:
+                        if(compareFlag > 0)
+                        {
+                            current = int.Parse(curVal.value);
+                        }
+                        break;
+                    case InstrType.JmpFalse:
+                        if(compareFlag <= 0)
+                        {
+                            current = int.Parse(curVal.value);
+                        }
+                        break;
+                        /*
+                        case InstrType.Jne:
+                            if(compareFlag!=0)
+                            {
+                                current = int.Parse(curVal.value);
+                            }
+                            break;
+
+                        case InstrType.Je:
+                            if(compareFlag==0)
+                            {
+                                current = int.Parse(curVal.value);
+                            }
+                            break;
+
+                        case InstrType.Jg:
+                            if(compareFlag>0)
+                            {
+                                current = int.Parse(curVal.value);
+                            }
+                            break;
+                        case InstrType.Jl:
+                            if(compareFlag<0)
+                            {
+                                current = int.Parse(curVal.value);
+                            }
+                            break;
+                        case InstrType.Jmp:
+                            current = int.Parse(curVal.value);
+                            break;
+                            */
                 }
 
                 current++;
@@ -140,6 +174,88 @@ namespace Runner
 
         }
 
+
+        private void DoValueCompare(InstrType type)
+        {
+            IRValue val1 = values.Pop();
+            IRValue val2 = values.Pop();
+
+            //right push first
+            /*
+                val1 < val2
+                push val2
+                push val1
+                cmpl (val2 > val1)
+            */
+
+            IRValue True = new IRValue("1", IRValueType.Const);
+            IRValue False = new IRValue("0", IRValueType.Const);
+
+            int x = int.Parse(val1.value);
+            int y = int.Parse(val2.value);
+
+
+
+            switch(type)
+            {
+                case InstrType.CmpEq:
+                    if(x == y) 
+                    {
+                        values.Push(True);
+                    }
+                    else
+                    {
+                        values.Push(False);
+                    } 
+
+                    break;
+                case InstrType.CmpG:
+                    if(x > y) //x < y because right side of AST generates first
+                    {
+                        values.Push(True);
+                    }
+                    else
+                    {
+                        values.Push(False);
+                    } 
+
+                    break;
+
+                case InstrType.CmpGEq:
+                    if(x >= y) 
+                    {
+                        values.Push(True);
+                    }
+                    else
+                    {
+                        values.Push(False);
+                    } 
+
+                    break;
+                case InstrType.CmpL:
+                    if(x < y) 
+                    {
+                        values.Push(True);
+                    }
+                    else
+                    {
+                        values.Push(False);
+                    } 
+
+                    break;
+                case InstrType.CmpLEq:
+                    if(x <= y)
+                    {
+                        values.Push(True);
+                    }
+                    else
+                    {
+                        values.Push(False);
+                    } 
+
+                    break;
+            }
+        }
 
         private void DoCall(string func)
         {

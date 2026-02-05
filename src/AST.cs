@@ -28,32 +28,7 @@ public class ASTNode
         return false;
     }
 
-    public void MakeConditionalJump(TokenType compOp, IRBuilder builder, string label)
-    {
-        switch(compOp)
-        {
-            case TokenType.Lesser:
-                builder.MakeJmpGreater(label);
-                builder.MakeJmpEQ(label);
-                break;
-            case TokenType.LessEqual:
-                builder.MakeJmpGreater(label);
-                break;
-            case TokenType.Greater:
-                builder.MakeJmpLess(label);
-                builder.MakeJmpEQ(label);
-                break;
-            case TokenType.GreaterEqual:
-                builder.MakeJmpLess(label);
-                break;
-            case TokenType.Equal:
-                builder.MakeJmpNEQ(label);
-                break;
-            case TokenType.NotEqual:
-                builder.MakeJmpEQ(label);
-                break;
-        }
-    }
+    
 }
 
 public class BinOp : ASTNode
@@ -98,10 +73,9 @@ public class BinOp : ASTNode
         right.MakeInstruction(builder);
         left.MakeInstruction(builder);
 
-        if(!isCompare)
-        {
-            builder.MakeOperator(IRBuilder.GetInstrFromOp(value));
-        }
+        
+        builder.MakeOperator(IRBuilder.GetInstrFromOp(value));
+        
 
         
 
@@ -411,40 +385,19 @@ public class IfNode : ASTNode
         
 
 
-        string labelName = builder.NewLabelName();
+        string endLabel = builder.NewLabelName();
 
-        if(expr.IsComparison())
-        {
-            expr.MakeInstruction(builder); 
-
-            builder.MakeCmp();
-            TokenType compType = expr.value.type;
-            MakeConditionalJump(compType, builder, labelName);
-
-        }
-        else
-        {
-            builder.MakeConstant("0", builder.GetLastDT());
-
-            expr.MakeInstruction(builder); 
-
-            builder.MakeCmp();
-            
-            builder.MakeJmpLess(labelName);
-            builder.MakeJmpEQ(labelName);
-            
-        }
-
-
-
-        //TODO: Determine based on operation above (based on expr, == jne, != je, < jl, >jg etc.)
-        //Wait no, you only jump if the logic above is 0 or false, make a comp for that!
         
+        expr.MakeInstruction(builder); 
+
+        builder.MakeCmp();
+        builder.MakeJmpFalse(endLabel);
+
 
         body.MakeInstruction(builder);
         
-        builder.MakeLabel(labelName);
-        builder.ClearLabel(labelName);
+        builder.MakeLabel(endLabel);
+        builder.ClearLabel(endLabel);
     }
 }
 
@@ -475,29 +428,12 @@ public class WhileNode : ASTNode
         string endLabel = builder.NewLabelName();
         
         builder.MakeLabel(startLabel);
-
         
+        expr.MakeInstruction(builder);
+        builder.MakeCmp();
+        builder.MakeJmpFalse(endLabel);
 
 
-        if(expr.IsComparison())
-        {
-            expr.MakeInstruction(builder);
-            builder.MakeCmp();
-            TokenType compType = expr.value.type;
-            MakeConditionalJump(compType, builder, endLabel);
-            
-        }
-        else
-        {
-            builder.MakeConstant("0", builder.GetLastDT());
-
-            expr.MakeInstruction(builder);
-            
-            builder.MakeCmp();
-
-            builder.MakeJmpLess(endLabel);
-            builder.MakeJmpEQ(endLabel);
-        }
 
         body.MakeInstruction(builder);
 

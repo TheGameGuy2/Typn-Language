@@ -21,13 +21,16 @@ public enum InstrType : byte
     Call,
     CallNative,
     Comp,
+    CmpG,
+    CmpGEq,
+    CmpL,
+    CmpLEq,
+    CmpEq,
     Push,
     Load,
     Jmp,
-    Je, //jump equal
-    Jne,
-    Jg,
-    Jl,
+    JmpTrue,
+    JmpFalse
 
 
 }
@@ -46,7 +49,8 @@ public enum IRDataType
     Bool
 }
 
-public class IRValue
+//switch to class if something breaks
+public struct IRValue
 {
     public readonly IRValueType type;
     public string value { get; private set; }
@@ -113,8 +117,6 @@ public class IRBuilder
     //variables stores all defined variables and their types for typechecking
     private Dictionary<string, IRDataType> variables = new();
 
-    private Instruction currentLabelJump;
-
     private Dictionary<string, int> labelDict = new();
     private Dictionary<string, List<Instruction>> labelSubscribers = new();
 
@@ -131,6 +133,7 @@ public class IRBuilder
 
 
 
+    //TODO: Remove label logic from First IR pass, patch labels after optim. later.
     public string NewLabelName()
     {
         labelCounter++;
@@ -176,6 +179,11 @@ public class IRBuilder
             TokenType.And => InstrType.And,
             TokenType.Or => InstrType.Or,
             TokenType.Not => InstrType.Not,
+            TokenType.CompEqual => InstrType.CmpEq,
+            TokenType.Lesser => InstrType.CmpL,
+            TokenType.LessEqual => InstrType.CmpLEq,
+            TokenType.Greater => InstrType.CmpG,
+            TokenType.GreaterEqual => InstrType.CmpGEq,
             _ => throw new Exception($"[IR Gen] Can not get Instruction from token: {op}")
         };
     }
@@ -185,11 +193,7 @@ public class IRBuilder
         return instructions[^1].instrDataType;
     }
 
-    //Start label beginns label mode, means the current instruction will get an address as a value when EndLabel is called
-    public void StartLabel()
-    {
-        currentLabelJump = instructions[^1];
-    }
+    
 
     //creates a label after the current instruction
     /// <summary>
@@ -277,7 +281,28 @@ public class IRBuilder
         SubscribeToLabel(instr, jmpLabel);
     }
 
+    //Compares the top value of the stack with 0, sets comp flag to result.
+    public void MakeCmp()
+    {
+        Instruction instr = new(InstrType.Comp);
+        instructions.Add(instr);
+    }
 
+    public void MakeJmpTrue(string jmpLabel)
+    {
+        Instruction instr = new Instruction(InstrType.JmpTrue);
+        instructions.Add(instr);
+        SubscribeToLabel(instr, jmpLabel);
+    }
+
+    public void MakeJmpFalse(string jmpLabel)
+    {
+        Instruction instr = new Instruction(InstrType.JmpFalse);
+        instructions.Add(instr);
+        SubscribeToLabel(instr, jmpLabel);
+    }
+
+    /*
     public void MakeJmpEQ(string jmpLabel)
     {
         Instruction instr = new Instruction(InstrType.Je);
@@ -285,12 +310,7 @@ public class IRBuilder
         SubscribeToLabel(instr, jmpLabel);
     }
 
-    //Compares the top values of the stack, sets comp flag to result.
-    public void MakeCmp()
-    {
-        Instruction instr = new(InstrType.Comp,instructions[^1].instrDataType);
-        instructions.Add(instr);
-    }
+    
 
     public void MakeJmpLess(string jmpLabel)
     {
@@ -312,7 +332,7 @@ public class IRBuilder
         instructions.Add(instr);
         SubscribeToLabel(instr, jmpLabel);
     }
-
+*/
     public void MakeLoad(string name)
     {
         if(!variables.ContainsKey(name))

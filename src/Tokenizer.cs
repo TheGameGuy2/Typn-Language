@@ -87,7 +87,7 @@ public class Tokenizer
     {
         List<Token> tokens = new();
 
-        while(Consume() != '\0')
+        while (Consume() != '\0')
         {
 
             char curChar = code[current];
@@ -95,37 +95,37 @@ public class Tokenizer
             if (curChar == '#')
             {
                 Consume();
-                if(curChar == '#' && Peek() == '#')
+                if (curChar == '#' && Peek() == '#')
                 {
                     MakeMultiLineComment();
                 }
             }
 
-            if(curChar == '/' && Peek() == '/')
+            if (curChar == '/' && Peek() == '/')
             {
-                while(Consume() != '\n'){}
+                while (Consume() != '\n') { }
             }
 
-            if(char.IsDigit(curChar))
+            if (char.IsDigit(curChar))
             {
                 tokens.Add(MakeNumber());
             }
-            else if(char.IsAsciiLetter(curChar))
+            else if (char.IsAsciiLetter(curChar))
             {
                 tokens.Add(MakeKeyword());
             }
 
             curChar = code[current];
 
-            if(doubleOperators.Contains(curChar))
+            if (doubleOperators.Contains(curChar))
             {
                 tokens.Add(MakeDoubleOp());
             }
-            else if(tokenMap.ContainsKey(curChar))
+            else if (tokenMap.ContainsKey(curChar))
             {
-                if(curChar == '\n')
+                if (curChar == '\n')
                 {
-                    if(tokens.Count-1 >= 0 && tokens[^1].type != TokenType.NewLine)
+                    if (tokens.Count - 1 >= 0 && tokens[^1].type != TokenType.NewLine)
                     {
                         tokens.Add(tokenMap[curChar]);
                     }
@@ -136,28 +136,36 @@ public class Tokenizer
                 }
 
             }
-            else if(!specialSkipChars.Contains(curChar))
+            else if (!specialSkipChars.Contains(curChar))
             {
                 Console.WriteLine($"[Lexer] Warning, unexpected char \"{curChar}\"");
                 //throw new Exception($"[Lexer] Unexpected character '{curChar}'");
             }
-            
 
-            
-            
+
+
+
 
 
 
         }
+
+        if(tokens.Count>0 && tokens[^1].type != TokenType.NewLine)
+        {
+            tokens.Add(tokenMap['\n']);
+            //parser will be very angry if we don't do this
+        }
+
         tokens.Add(new Token(TokenType.EOF, "EOF"));
         return tokens;
     }
 
     private void MakeMultiLineComment()
     {
-        while(true)
+
+        char cur = Consume();
+        while(cur != '\0')
         {
-            char cur = Consume();
             
             if(cur == '#' && Peek() == '#')
             {
@@ -168,6 +176,7 @@ public class Tokenizer
                     return;
                 }
             }
+            cur = Consume();
         }
     }
 
