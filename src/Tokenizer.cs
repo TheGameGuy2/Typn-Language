@@ -154,6 +154,7 @@ public class Tokenizer
         {
             tokens.Add(tokenMap['\n']);
             //parser will be very angry if we don't do this
+            //(it expects \n after each statement, last statement could end in EOF)
         }
 
         tokens.Add(new Token(TokenType.EOF, "EOF"));
