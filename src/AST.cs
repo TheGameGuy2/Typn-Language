@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using Errors;
 using IR;
 using Lexing;
 
@@ -10,6 +11,7 @@ namespace Parsing;
 public class ASTNode
 {
     public Token value;
+    public IRDataType dataType;
 
     public virtual void Show(int depth)
     {
@@ -23,11 +25,21 @@ public class ASTNode
 
     public virtual void MakeInstruction(IRBuilder builder){}
 
-    public virtual bool IsComparison()
+    /// <summary>
+    ///     Gets the data type of a value token, do not confuse with DataType tokens
+    /// </summary>
+    /// 
+    public static IRDataType GetValueDataType(Token tok)
     {
-        return false;
+        return tok.type switch
+        {
+            TokenType.FNum => IRDataType.Float,
+            TokenType.INum => IRDataType.Int,
+            TokenType.Bool => IRDataType.Bool,
+            TokenType.DataType => IRBuilder.GetDTFromToken(tok),
+            _ => IRDataType.None
+        };
     }
-
     
 }
 
@@ -36,28 +48,17 @@ public class BinOp : ASTNode
     public ASTNode left;
     public ASTNode right;
 
-    private bool isCompare = false;
-
-    private static TokenType[] compTypes = [TokenType.CompEqual,
-                                            TokenType.NotEqual,
-                                            TokenType.Lesser,
-                                            TokenType.LessEqual,
-                                            TokenType.Greater,
-                                            TokenType.GreaterEqual,
-                                            ];
-    private static TokenType[] logicalTypes = [TokenType.And, TokenType.Or];
-
+    
     public BinOp(ASTNode left, ASTNode op, ASTNode right)
     {
+
         this.left = left;
         this.right = right;
         this.value = op.value;
 
-        if(compTypes.Contains(op.value.type))
-        {
-            isCompare = true;
-        }
-        
+        dataType = left.dataType;
+
+
     }
 
     public override void Show(int depth)
@@ -73,20 +74,9 @@ public class BinOp : ASTNode
         right.MakeInstruction(builder);
         left.MakeInstruction(builder);
 
-        
         builder.MakeOperator(IRBuilder.GetInstrFromOp(value));
         
-
-        
-
     }
-
-    public override bool IsComparison()
-    {
-        return isCompare;
-    }
-    
-
 
 }
 
@@ -97,15 +87,15 @@ public class Operator : ASTNode
         this.value = value;
     }
 
-
-
 }
 
-public class Number : ASTNode
+public class ConstValue : ASTNode
 {
-    public Number(Token value)
+    public ConstValue(Token value)
     {
         this.value = value;
+
+        dataType = GetValueDataType(value);
     }
 
     public override void MakeInstruction(IRBuilder builder)
@@ -134,6 +124,9 @@ public class NegateNode : ASTNode
     {
         this.expr = expr;
         value = new Token(TokenType.Sub,"Negate");
+
+        
+        dataType = expr.dataType;
     }
 
     public override void Show(int depth)
@@ -144,7 +137,7 @@ public class NegateNode : ASTNode
 
     public override void MakeInstruction(IRBuilder builder)
     {
-        if(expr is Number)
+        if(expr is ConstValue)
         {
             switch(expr.value.type)
             {
@@ -159,7 +152,7 @@ public class NegateNode : ASTNode
         else
         {
             expr.MakeInstruction(builder);
-            builder.MakeConstant("-1",builder.GetLastDT());
+            builder.MakeConstant("-1",dataType);
             builder.MakeOperator(IRBuilder.GetInstrFromOp(new Token(TokenType.Mul, "*")));
         }
 
@@ -178,6 +171,8 @@ public class NotNode : ASTNode
     {
         this.expr = expr;
         value = new Token(TokenType.Not,"Not");
+
+        dataType = IRDataType.Bool;
     }
 
     public override void Show(int depth)
@@ -192,10 +187,6 @@ public class NotNode : ASTNode
         builder.MakeNot();
     }
 
-    public override bool IsComparison()
-    {
-        return true;
-    }
 }
 
 public class NullValue : ASTNode
@@ -223,20 +214,22 @@ public class Name : ASTNode
 public class VariableNode : ASTNode
 {
     public Token name;
-    public Token dataType;
+    public Token dataTypeToken;
 
     public ASTNode varValue;
 
-    public VariableNode(Token name, Token dataType,ASTNode value)
+    public VariableNode(Token name, Token dataTypeToken,ASTNode value)
     {
         this.name = name;
-        this.dataType = dataType;
+        this.dataTypeToken = dataTypeToken;
         this.varValue = value;
+
+        dataType = GetValueDataType(dataTypeToken);
     }
 
     public override void Show(int depth)
     {
-        value.value = $"VAR: {dataType} {name.value} =";
+        value.value = $"VAR: {dataTypeToken} {name.value} =";
         base.Show(depth);
         varValue.Show(depth + 1);
     }
@@ -245,13 +238,13 @@ public class VariableNode : ASTNode
     {
         if(varValue.value.type == TokenType.Null)
         {
-            builder.MakeDefine(name.value, IRBuilder.GetDTFromToken(dataType));
+            builder.MakeDefine(name.value, IRBuilder.GetDTFromToken(dataTypeToken));
             return;
         }
 
         varValue.MakeInstruction(builder);
 
-        builder.MakeDefine(name.value, IRBuilder.GetDTFromToken(dataType));
+        builder.MakeDefine(name.value, IRBuilder.GetDTFromToken(dataTypeToken));
         builder.MakeSet(name.value);
     }
 
@@ -266,6 +259,9 @@ public class AssignNode : ASTNode
     {
         value = new Token(TokenType.Name, $"Assign {name}");
         assignExpr = expr;
+
+        
+
         this.name = name;
     }
 

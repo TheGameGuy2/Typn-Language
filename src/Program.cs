@@ -1,4 +1,5 @@
-﻿using IR;
+﻿using Errors;
+using IR;
 using Lexing;
 using Parsing;
 using Runner;
@@ -14,7 +15,7 @@ var tokens = t.MakeTokens();
 
 foreach(Token tok in tokens)
 {
-    Console.WriteLine(tok);
+    //Console.WriteLine(tok);
     
 }
 
@@ -25,10 +26,11 @@ Parser p = new(tokens);
 //p.ParseExpression().Show(0);
 List<ASTNode> nodes = p.ParseModule();
 
-foreach(ASTNode node in nodes)
+
+/*foreach(ASTNode node in nodes)
 {
     node.Show(0);
-}
+}*/
 
 
 
@@ -40,6 +42,8 @@ foreach(ASTNode node in nodes)
 {
     node.MakeInstruction(builder);
 }
+
+
 
 builder.ShowInstructions();
 

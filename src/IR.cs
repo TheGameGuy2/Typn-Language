@@ -26,6 +26,7 @@ public enum InstrType : byte
     CmpL,
     CmpLEq,
     CmpEq,
+    CmpNEq,
     Push,
     Load,
     Jmp,
@@ -149,15 +150,15 @@ public class IRBuilder
     {
         string value = dataType.value;
 
-        if(value == DataTypes.Int)
+        if(value == TokenDataType.Int)
         {
             return IRDataType.Int;
         }
-        else if(value == DataTypes.Float)
+        else if(value == TokenDataType.Float)
         {
             return IRDataType.Float;
         }
-        else if (value == DataTypes.Bool)
+        else if (value == TokenDataType.Bool)
         {
             return IRDataType.Bool;
         }
@@ -179,6 +180,7 @@ public class IRBuilder
             TokenType.And => InstrType.And,
             TokenType.Or => InstrType.Or,
             TokenType.Not => InstrType.Not,
+            TokenType.NotEqual => InstrType.CmpNEq,
             TokenType.CompEqual => InstrType.CmpEq,
             TokenType.Lesser => InstrType.CmpL,
             TokenType.LessEqual => InstrType.CmpLEq,

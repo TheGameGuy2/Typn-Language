@@ -41,9 +41,9 @@ public class Tokenizer
         tokenMap['<'] = new Token(TokenType.Lesser, "<");
         tokenMap['>'] = new Token(TokenType.Greater, ">");
 
-        keywordMap["int"] = new Token(TokenType.DataType, DataTypes.Int);
-        keywordMap["flt"] = new Token(TokenType.DataType, DataTypes.Float);
-        keywordMap["bol"] = new Token(TokenType.DataType, DataTypes.Bool);
+        keywordMap["int"] = new Token(TokenType.DataType, TokenDataType.Int);
+        keywordMap["flt"] = new Token(TokenType.DataType, TokenDataType.Float);
+        keywordMap["bol"] = new Token(TokenType.DataType, TokenDataType.Bool);
 
         keywordMap["=="] = new Token(TokenType.CompEqual,"==");
         keywordMap["!="] = new Token(TokenType.NotEqual, "!=");
@@ -51,6 +51,9 @@ public class Tokenizer
         keywordMap[">="] = new Token(TokenType.GreaterEqual, ">=");
         keywordMap["&&"] = new Token(TokenType.And,"&&");
         keywordMap["||"] = new Token(TokenType.Or,"||");
+
+        keywordMap["true"] = new Token(TokenType.Bool, "1");
+        keywordMap["false"] = new Token(TokenType.Bool, "0");
 
         keywordMap["if"] = new Token(TokenType.If, "if");
         keywordMap["while"] = new Token(TokenType.While, "while");
@@ -98,6 +101,7 @@ public class Tokenizer
                 if (curChar == '#' && Peek() == '#')
                 {
                     MakeMultiLineComment();
+                    Consume(); //Consume last #
                 }
             }
 
@@ -154,7 +158,7 @@ public class Tokenizer
         {
             tokens.Add(tokenMap['\n']);
             //parser will be very angry if we don't do this
-            //(it expects \n after each statement, last statement could end in EOF)
+            //(it expects \n after each statement, last line could end in EOF)
         }
 
         tokens.Add(new Token(TokenType.EOF, "EOF"));

@@ -153,9 +153,9 @@ public partial class Parser
     {
         Token currentToken = Consume(); 
 
-        if(currentToken.type == TokenType.INum || currentToken.type == TokenType.FNum)
+        if(currentToken.type == TokenType.INum || currentToken.type == TokenType.FNum || currentToken.type == TokenType.Bool)
         {
-            ASTNode nNode = new Number(currentToken);
+            ASTNode nNode = new ConstValue(currentToken);
             return nNode;
         }
         else if(currentToken.type == TokenType.Name)

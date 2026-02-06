@@ -5,8 +5,9 @@ namespace Lexing;
 public enum TokenType
 {
     Null,
-    FNum,
+    FNum, //fnum, inum only tell if a number has a decimal point
     INum,
+    Bool, //bool litteral, true/false
     Plus,
     Sub,
     Mul,
@@ -32,12 +33,11 @@ public enum TokenType
     NewLine, //acts as an expression end in this lang.
     Comma,
     If,
-    
     While,
     EOF
 }
 
-public static class DataTypes
+public static class TokenDataType
 {
     public readonly static string Int = "int";
     public readonly static string Float = "float";

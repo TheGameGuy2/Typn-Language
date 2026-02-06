@@ -118,6 +118,9 @@ namespace Runner
                     case InstrType.CmpL:
                         DoValueCompare(curOp.type);
                         break;
+                    case InstrType.CmpNEq:
+                        DoValueCompare(curOp.type);
+                        break;
 
                     case InstrType.Jmp:
                         current = int.Parse(curVal.value);
@@ -135,37 +138,7 @@ namespace Runner
                             current = int.Parse(curVal.value);
                         }
                         break;
-                        /*
-                        case InstrType.Jne:
-                            if(compareFlag!=0)
-                            {
-                                current = int.Parse(curVal.value);
-                            }
-                            break;
-
-                        case InstrType.Je:
-                            if(compareFlag==0)
-                            {
-                                current = int.Parse(curVal.value);
-                            }
-                            break;
-
-                        case InstrType.Jg:
-                            if(compareFlag>0)
-                            {
-                                current = int.Parse(curVal.value);
-                            }
-                            break;
-                        case InstrType.Jl:
-                            if(compareFlag<0)
-                            {
-                                current = int.Parse(curVal.value);
-                            }
-                            break;
-                        case InstrType.Jmp:
-                            current = int.Parse(curVal.value);
-                            break;
-                            */
+                        
                 }
 
                 current++;
@@ -198,6 +171,16 @@ namespace Runner
 
             switch(type)
             {
+                case InstrType.CmpNEq:
+                    if(x != y) 
+                    {
+                        values.Push(True);
+                    }
+                    else
+                    {
+                        values.Push(False);
+                    } 
+                    break;
                 case InstrType.CmpEq:
                     if(x == y) 
                     {
