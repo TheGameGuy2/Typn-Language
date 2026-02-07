@@ -7,7 +7,8 @@ namespace Errors;
 public enum ErrorType
 {
     SyntaxError,
-    TypeError
+    TypeError,
+    NameError
 }
 
 

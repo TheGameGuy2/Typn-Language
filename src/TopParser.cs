@@ -151,7 +151,7 @@ public partial class Parser
 
         ASTNode expr = ParseExpression();
 
-        return new AssignNode(name, expr);
+        return new AssignNode(new Name(name), expr);
     }
 
     private ASTNode MakeVarDef()

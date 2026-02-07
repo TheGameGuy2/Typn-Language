@@ -27,12 +27,12 @@ while(count<=(count*count/count - (0-0+1-1+count) + 1)) //doing some conditions 
 }
 ###
 int:two = 1
+
 if(two != -(-1))
 {
     print(67)
 }
 
+three = 4
+
 print(two)
-
-
-

@@ -1,4 +1,5 @@
-﻿using Errors;
+﻿using ASTPasses;
+using Errors;
 using IR;
 using Lexing;
 using Parsing;
@@ -19,7 +20,6 @@ foreach(Token tok in tokens)
     
 }
 
-
 Console.WriteLine("--- AST ---");
 
 Parser p = new(tokens);
@@ -33,6 +33,18 @@ List<ASTNode> nodes = p.ParseModule();
 }*/
 
 
+SymbolResolver resolver = new();
+
+foreach(ASTNode node in nodes)
+{
+    node.AcceptVisitor(resolver);
+}
+
+
+if(ErrorHandler.HasErrors())
+{
+    ErrorHandler.ThrowAll();
+}
 
 Console.WriteLine("--- Stage 1 IR ---");
 

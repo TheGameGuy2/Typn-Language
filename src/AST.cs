@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Globalization;
 using System.Numerics;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using Errors;
 using IR;
@@ -40,6 +41,10 @@ public class ASTNode
             _ => IRDataType.None
         };
     }
+    public virtual void AcceptVisitor(ASTVisitor visitor)
+    {
+
+    }
     
 }
 
@@ -69,6 +74,13 @@ public class BinOp : ASTNode
 
     }
 
+    public override void AcceptVisitor(ASTVisitor visitor)
+    {
+        visitor.Visit(this);
+        right.AcceptVisitor(visitor);
+        left.AcceptVisitor(visitor);
+    }
+
     public override void MakeInstruction(IRBuilder builder)
     {
         right.MakeInstruction(builder);
@@ -78,6 +90,8 @@ public class BinOp : ASTNode
         
     }
 
+    
+
 }
 
 public class Operator : ASTNode
@@ -85,6 +99,11 @@ public class Operator : ASTNode
     public Operator(Token value)
     {
         this.value = value;
+    }
+
+    public override void AcceptVisitor(ASTVisitor visitor)
+    {
+        visitor.Visit(this);
     }
 
 }
@@ -118,11 +137,11 @@ public class ConstValue : ASTNode
 
 public class NegateNode : ASTNode
 {
-    public ASTNode expr;
+    public ASTNode Expr;
 
     public NegateNode(ASTNode expr)
     {
-        this.expr = expr;
+        this.Expr = expr;
         value = new Token(TokenType.Sub,"Negate");
 
         
@@ -132,26 +151,26 @@ public class NegateNode : ASTNode
     public override void Show(int depth)
     {
         base.Show(depth);
-        expr.Show(depth + 1);
+        Expr.Show(depth + 1);
     }
 
     public override void MakeInstruction(IRBuilder builder)
     {
-        if(expr is ConstValue)
+        if(Expr is ConstValue)
         {
-            switch(expr.value.type)
+            switch(Expr.value.type)
             {
                 case TokenType.FNum:
-                    builder.MakeConstant((-1*float.Parse(expr.value.value,CultureInfo.InvariantCulture)).ToString(), IRDataType.Float);
+                    builder.MakeConstant((-1*float.Parse(Expr.value.value,CultureInfo.InvariantCulture)).ToString(), IRDataType.Float);
                     break;
                 case TokenType.INum:
-                    builder.MakeConstant((-1*int.Parse(expr.value.value)).ToString(), IRDataType.Int);
+                    builder.MakeConstant((-1*int.Parse(Expr.value.value)).ToString(), IRDataType.Int);
                     break;
             }
         }
         else
         {
-            expr.MakeInstruction(builder);
+            Expr.MakeInstruction(builder);
             builder.MakeConstant("-1",dataType);
             builder.MakeOperator(IRBuilder.GetInstrFromOp(new Token(TokenType.Mul, "*")));
         }
@@ -160,16 +179,21 @@ public class NegateNode : ASTNode
 
     }
 
+    public override void AcceptVisitor(ASTVisitor visitor)
+    {
+        visitor.Visit(this);
+        Expr.AcceptVisitor(visitor);
+    }
     
 
 }
 
 public class NotNode : ASTNode
 {
-    public ASTNode expr;
+    public ASTNode Expr;
     public NotNode(ASTNode expr)
     {
-        this.expr = expr;
+        this.Expr = expr;
         value = new Token(TokenType.Not,"Not");
 
         dataType = IRDataType.Bool;
@@ -178,15 +202,20 @@ public class NotNode : ASTNode
     public override void Show(int depth)
     {
         base.Show(depth);
-        expr.Show(depth + 1);
+        Expr.Show(depth + 1);
     }
 
     public override void MakeInstruction(IRBuilder builder)
     {
-        expr.MakeInstruction(builder);
+        Expr.MakeInstruction(builder);
         builder.MakeNot();
     }
 
+    public override void AcceptVisitor(ASTVisitor visitor)
+    {
+        visitor.Visit(this);
+        Expr.AcceptVisitor(visitor);
+    }
 }
 
 public class NullValue : ASTNode
@@ -197,8 +226,11 @@ public class NullValue : ASTNode
     }
 }
 
+
 public class Name : ASTNode
 {
+    public Symbol? resolvedSymbol;
+
     public Name(Token value)
     {
         this.value = value;
@@ -209,9 +241,14 @@ public class Name : ASTNode
         builder.MakeLoad(value.value);
     }
 
+    public override void AcceptVisitor(ASTVisitor visitor)
+    {
+        visitor.Visit(this);
+    }
+
 }
 
-public class VariableNode : ASTNode
+public class VariableNode : ASTNode //Declaration
 {
     public Token name;
     public Token dataTypeToken;
@@ -248,16 +285,22 @@ public class VariableNode : ASTNode
         builder.MakeSet(name.value);
     }
 
+    public override void AcceptVisitor(ASTVisitor visitor)
+    {
+        visitor.Visit(this);
+        varValue.AcceptVisitor(visitor);
+    }
+
 }
 
 public class AssignNode : ASTNode
 {
     public ASTNode assignExpr;
-    public Token name;
+    public Name name;
 
-    public AssignNode(Token name,ASTNode expr)
+    public AssignNode(Name name,ASTNode expr)
     {
-        value = new Token(TokenType.Name, $"Assign {name}");
+        value = new Token(TokenType.Name, $"Assign {name.value.value}");
         assignExpr = expr;
 
         
@@ -274,7 +317,14 @@ public class AssignNode : ASTNode
     public override void MakeInstruction(IRBuilder builder)
     {
         assignExpr.MakeInstruction(builder);
-        builder.MakeSet(name.value);
+        builder.MakeSet(name.value.value);
+    }
+
+    public override void AcceptVisitor(ASTVisitor visitor)
+    {
+        visitor.Visit(this);
+        name.AcceptVisitor(visitor);
+        assignExpr.AcceptVisitor(visitor);
     }
 }
 
@@ -320,6 +370,11 @@ public class CallNode : ASTNode
 
         builder.MakeCall(caller.value.value);
     }
+
+    public override void AcceptVisitor(ASTVisitor visitor)
+    {
+        caller.AcceptVisitor(visitor);
+    }
 }
 
 public class BlockNode : ASTNode
@@ -351,6 +406,19 @@ public class BlockNode : ASTNode
         {
             node.MakeInstruction(builder);
         }
+    }
+
+    public override void AcceptVisitor(ASTVisitor visitor)
+    {
+        visitor.Visit(this);
+
+        foreach(ASTNode node in statements)
+        {
+            node.AcceptVisitor(visitor);
+        }
+
+        visitor.Exit(this);
+
     }
 }
 
@@ -394,6 +462,14 @@ public class IfNode : ASTNode
         
         builder.MakeLabel(endLabel);
         builder.ClearLabel(endLabel);
+    }
+
+
+    public override void AcceptVisitor(ASTVisitor visitor)
+    {
+        visitor.Visit(this);
+        expr.AcceptVisitor(visitor);
+        body.AcceptVisitor(visitor);
     }
 }
 
@@ -439,6 +515,12 @@ public class WhileNode : ASTNode
         //builder.ClearLabel(startLabel);
         builder.ClearLabel(endLabel);
 
+    }
 
+    public override void AcceptVisitor(ASTVisitor visitor)
+    {
+        visitor.Visit(this);
+        expr.AcceptVisitor(visitor);
+        body.AcceptVisitor(visitor);
     }
 }
