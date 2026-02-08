@@ -42,6 +42,16 @@ while(count<=(count*count/count - (0-0+1-1+count) + 1)) //doing some conditions 
 ###
 
 
+int:cur = 65
+
+while(cur<91)
+{
+    printc(cur)
+    cur = cur + 1
+}
+
+printc(10)
+
 int:two = 1
 
 
@@ -52,3 +62,5 @@ if(two == -(-1))
 
 
 print(two)
+
+
