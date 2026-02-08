@@ -70,7 +70,5 @@ public class SymbolResolver : ASTVisitor
             node.dataType = symb.DataType;
         }
     }
-    
 
-    
 }

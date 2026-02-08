@@ -7,7 +7,7 @@ This programm calculates fibonaci numbers
 count is used for the loop, it represents the ammount of numbers to be calculated
 ###
 
-###
+
 int:count = 1
 
 //Storing the last 2 numbers, functions WIP, arrays WIP
@@ -25,9 +25,10 @@ while(count<=(count*count/count - (0-0+1-1+count) + 1)) //doing some conditions 
     two = two + temp
     
 }
+
+print(two)
+
 ###
-
-
 int:cur = 65
 
 while(cur<91)
@@ -61,5 +62,5 @@ if(two == -1)
 
 
 print(two)
-
+###
 
