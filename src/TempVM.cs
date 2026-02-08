@@ -246,16 +246,17 @@ namespace Runner
             {
                 Console.WriteLine(values.Pop().value);   
             }
+            else if(func == "printc")
+            {
+                
+                char val = (char)byte.Parse(values.Pop().value);
+                Console.Write(val);  
+            }
             else if(func == "helloWorld_Print")
             {
                 Console.WriteLine("Sometimes I dream of saving the world.\nSaving everyone from the invisible hand.");
             }
-            else if(func == "sq")
-            {
-                int val = int.Parse(values.Pop().value);
-                
-                values.Push(new IRValue((val*val).ToString(),IRValueType.Const));
-            }
+            
         }
         
 

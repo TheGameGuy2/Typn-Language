@@ -26,13 +26,29 @@ while(count<=(count*count/count - (0-0+1-1+count) + 1)) //doing some conditions 
     
 }
 ###
+###
+@namespace sio
+@extern print(int:val):nul
+@extern print(flt:val):nul
+@extern print(bol:val):nul
+@extern print(chr:val):nul
+@extern print(str:val):nul
+@extern [str]:argv
+###
+
+###
+@namespace raylib
+@extern InitWindow(str:text,int:x,int:y):nul
+###
+
+
 int:two = 1
 
-if(two != -(-1))
+
+if(two == -(-1))
 {
-    print(67)
+    printc(67)
 }
 
-three = 4
 
 print(two)

@@ -10,14 +10,16 @@ public class Tokenizer
     private string code;
 
     private int current = -1;
-    
+
+    private int lineCount = 0;
+
     private Dictionary<char,Token> tokenMap = new();
     private Dictionary<string, Token> keywordMap = new();
 
     private char[] doubleOperators = ['=','<','>','!','&','|'];
     private char[] specialSkipChars = ['\t',' '];
 
-
+    private List<Token> tokens = new();
 
 
     public Tokenizer(string code)
@@ -64,6 +66,11 @@ public class Tokenizer
         return char.IsAsciiLetter(c) || c == '_';
     }
 
+    private void MakeToken(TokenType type, string value)
+    {
+        //tokens.Add(new Token(type, value, lineCount)); //TODO: Integrate this
+    }
+
     private char Consume()
     {
         if (current+1 == code.Length)
@@ -71,6 +78,12 @@ public class Tokenizer
             return '\0';
         }
         current++;
+
+        if(code[current] == '\n')
+        {
+            lineCount++;
+        }
+
         return code[current];
     }
 
@@ -88,7 +101,6 @@ public class Tokenizer
 
     public List<Token> MakeTokens()
     {
-        List<Token> tokens = new();
 
         while (Consume() != '\0')
         {

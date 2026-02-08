@@ -41,10 +41,10 @@ foreach(ASTNode node in nodes)
 }
 
 
-if(ErrorHandler.HasErrors())
-{
-    ErrorHandler.ThrowAll();
-}
+//if(ErrorHandler.HasErrors())
+//{
+//    ErrorHandler.ThrowAll();
+//}
 
 Console.WriteLine("--- Stage 1 IR ---");
 

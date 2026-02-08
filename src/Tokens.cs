@@ -49,6 +49,8 @@ public struct Token
 {
     public TokenType type;
     public string? value;
+    
+    public readonly int line;
 
     public Token(){}
 
