@@ -50,7 +50,7 @@ public struct Token
     public TokenType type;
     public string? value;
     
-    public readonly int line;
+    public int line = -1;
 
     public Token(){}
 
@@ -62,7 +62,7 @@ public struct Token
 
     public override string ToString()
     {
-        return $"[{type}|{value}]";
+        return $"[{type}|{value} l{line}]";
     }
 }
 

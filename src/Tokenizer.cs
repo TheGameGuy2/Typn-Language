@@ -11,7 +11,7 @@ public class Tokenizer
 
     private int current = -1;
 
-    private int lineCount = 0;
+    private int lineCount = 1;
 
     private Dictionary<char,Token> tokenMap = new();
     private Dictionary<string, Token> keywordMap = new();
@@ -66,9 +66,10 @@ public class Tokenizer
         return char.IsAsciiLetter(c) || c == '_';
     }
 
-    private void MakeToken(TokenType type, string value)
+    private void AddToken(Token token)
     {
-        //tokens.Add(new Token(type, value, lineCount)); //TODO: Integrate this
+        token.line = lineCount;
+        tokens.Add(token);
     }
 
     private char Consume()
@@ -124,18 +125,18 @@ public class Tokenizer
 
             if (char.IsDigit(curChar))
             {
-                tokens.Add(MakeNumber());
+                AddToken(MakeNumber());
             }
             else if (char.IsAsciiLetter(curChar))
             {
-                tokens.Add(MakeKeyword());
+                AddToken(MakeKeyword());
             }
 
             curChar = code[current];
 
             if (doubleOperators.Contains(curChar))
             {
-                tokens.Add(MakeDoubleOp());
+                AddToken(MakeDoubleOp());
             }
             else if (tokenMap.ContainsKey(curChar))
             {
@@ -143,12 +144,12 @@ public class Tokenizer
                 {
                     if (tokens.Count - 1 >= 0 && tokens[^1].type != TokenType.NewLine)
                     {
-                        tokens.Add(tokenMap[curChar]);
+                        AddToken(tokenMap[curChar]);
                     }
                 }
                 else
                 {
-                    tokens.Add(tokenMap[curChar]);
+                    AddToken(tokenMap[curChar]);
                 }
 
             }
@@ -168,12 +169,12 @@ public class Tokenizer
 
         if(tokens.Count>0 && tokens[^1].type != TokenType.NewLine)
         {
-            tokens.Add(tokenMap['\n']);
+            AddToken(tokenMap['\n']);
             //parser will be very angry if we don't do this
             //(it expects \n after each statement, last line could end in EOF)
         }
 
-        tokens.Add(new Token(TokenType.EOF, "EOF"));
+        AddToken(new Token(TokenType.EOF, "EOF"));
         return tokens;
     }
 

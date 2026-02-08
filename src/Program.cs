@@ -15,10 +15,10 @@ Tokenizer t = new(File.ReadAllText("main.tph"));
 var tokens = t.MakeTokens();
 
 
+
 foreach(Token tok in tokens)
 {
     //Console.WriteLine(tok);
-    
 }
 
 Console.WriteLine("--- AST ---");
@@ -34,18 +34,20 @@ List<ASTNode> nodes = p.ParseModule();
 }*/
 
 
-SymbolResolver resolver = new();
+SymbolResolver symbResolver = new();
+TypeResolver typeResolver = new();
 
 foreach(ASTNode node in nodes)
 {
-    node.AcceptVisitor(resolver);
+    node.AcceptVisitor(symbResolver);
+    node.AcceptVisitor(typeResolver);
 }
 
 
-//if(ErrorHandler.HasErrors())
-//{
-//    ErrorHandler.ThrowAll();
-//}
+if(ErrorHandler.HasErrors())
+{
+    ErrorHandler.ThrowAll();
+}
 
 Console.WriteLine("--- Stage 1 IR ---");
 
@@ -55,7 +57,6 @@ foreach(ASTNode node in nodes)
 {
     node.MakeInstruction(builder);
 }
-
 
 
 builder.ShowInstructions();

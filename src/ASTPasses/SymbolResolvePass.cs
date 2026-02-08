@@ -50,7 +50,7 @@ public class SymbolResolver : ASTVisitor
         if(scopeStack.Peek().TryGetSymbol(name, out Symbol? symb))
         {
 
-            ErrorHandler.AddError(ErrorType.NameError, -1, $"Symbol {dataType}:{name} gets redefined.");
+            ErrorHandler.AddError(ErrorType.NameError, node.GetLine(), $"Symbol '{dataType}:{name}' gets redefined.");
             return;
         }
 
@@ -62,11 +62,12 @@ public class SymbolResolver : ASTVisitor
         if(!scopeStack.Peek().TryGetSymbol(node.value.value,out Symbol symb))
         {
             //used not defined name
-            ErrorHandler.AddError(ErrorType.NameError, -1, $"Name {node.value.value} not defined.");
+            ErrorHandler.AddError(ErrorType.NameError, node.GetLine(), $"Name '{node.value.value}' not defined in current scope.");
         }
         else
         {
             node.resolvedSymbol = symb;
+            node.dataType = symb.DataType;
         }
     }
     

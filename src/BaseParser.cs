@@ -1,4 +1,5 @@
 using System.Runtime.Serialization;
+using Errors;
 using Lexing;
 
 namespace Parsing;
@@ -42,7 +43,8 @@ public partial class Parser
     {
         if(tokens[current].type != type)
         {
-            throw new Exception($"Error: Expected {type} got {tokens[current]}");
+            ErrorHandler.AddError(ErrorType.SyntaxError, tokens[current].line, $"Unexpected '{tokens[current].value}'", true);
+            //throw new Exception($"Error: Expected {type} got {tokens[current]}");
         }
     }
 

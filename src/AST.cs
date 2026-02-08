@@ -24,6 +24,12 @@ public class ASTNode
         Console.WriteLine($"{dist}{value}");
     }
 
+    
+    public virtual int GetLine()
+    {
+        return value.line;
+    }
+
     public virtual void MakeInstruction(IRBuilder builder){}
 
     /// <summary>
@@ -76,9 +82,10 @@ public class BinOp : ASTNode
 
     public override void AcceptVisitor(ASTVisitor visitor)
     {
-        visitor.Visit(this);
+
         right.AcceptVisitor(visitor);
         left.AcceptVisitor(visitor);
+        visitor.Visit(this);
     }
 
     public override void MakeInstruction(IRBuilder builder)
@@ -195,6 +202,7 @@ public class NotNode : ASTNode
     {
         this.Expr = expr;
         value = new Token(TokenType.Not,"Not");
+        value.line = Expr.value.line;
 
         dataType = IRDataType.Bool;
     }
@@ -213,8 +221,8 @@ public class NotNode : ASTNode
 
     public override void AcceptVisitor(ASTVisitor visitor)
     {
-        visitor.Visit(this);
         Expr.AcceptVisitor(visitor);
+        visitor.Visit(this);
     }
 }
 
@@ -287,8 +295,9 @@ public class VariableNode : ASTNode //Declaration
 
     public override void AcceptVisitor(ASTVisitor visitor)
     {
-        visitor.Visit(this);
+
         varValue.AcceptVisitor(visitor);
+        visitor.Visit(this);
     }
 
 }
@@ -322,9 +331,9 @@ public class AssignNode : ASTNode
 
     public override void AcceptVisitor(ASTVisitor visitor)
     {
-        visitor.Visit(this);
         name.AcceptVisitor(visitor);
         assignExpr.AcceptVisitor(visitor);
+        visitor.Visit(this);
     }
 }
 
@@ -373,7 +382,8 @@ public class CallNode : ASTNode
 
     public override void AcceptVisitor(ASTVisitor visitor)
     {
-        caller.AcceptVisitor(visitor);
+        visitor.Visit(this);
+        //caller.AcceptVisitor(visitor);
     }
 }
 
