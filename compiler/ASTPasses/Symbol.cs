@@ -1,8 +1,9 @@
 
 using System.Net.Http.Headers;
 using IR;
+using Parsing;
 
-namespace Parsing;
+namespace ASTPasses;
 
 public record class Symbol(string Name, IRDataType DataType,Scope Scope);
 

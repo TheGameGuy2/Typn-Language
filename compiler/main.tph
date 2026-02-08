@@ -14,7 +14,7 @@ int:count = 1
 int:one = 0
 int:two = 1
 
-while(count<=(count*count/count - (0-0+1-1+count) + 1)) //doing some conditions tests
+while(count<=(count*count/count - (0-0+1-1+count) + 12)) //doing some conditions tests
 {
     
     count = count + 1
@@ -62,5 +62,5 @@ if(two == -1)
 
 
 print(two)
-###
+
 
