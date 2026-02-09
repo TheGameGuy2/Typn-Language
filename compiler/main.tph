@@ -29,8 +29,9 @@ while(count<=(count*count/count - (0-0+1-1+count) + 12)) //doing some conditions
 print(two)
 
 ###
-int:cur = 65
 
+
+int:cur = 65
 while(cur<91)
 {
     //flt:hey = 23
