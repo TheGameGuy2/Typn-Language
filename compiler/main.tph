@@ -7,6 +7,7 @@ This programm calculates fibonaci numbers
 count is used for the loop, it represents the ammount of numbers to be calculated
 ###
 
+str:my_name = "Andre"
 
 int:count = 1
 

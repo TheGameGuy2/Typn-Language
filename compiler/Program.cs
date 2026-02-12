@@ -18,9 +18,10 @@ var tokens = t.MakeTokens();
 
 foreach(Token tok in tokens)
 {
-    //Console.WriteLine(tok);
+    Console.WriteLine(tok);
 }
 
+return;
 Console.WriteLine("--- AST ---");
 
 Parser p = new(tokens);

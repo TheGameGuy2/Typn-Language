@@ -1,5 +1,6 @@
 
 using System.Reflection.PortableExecutable;
+using Errors;
 
 namespace Lexing;
 
@@ -46,6 +47,7 @@ public class Tokenizer
         keywordMap["int"] = new Token(TokenType.DataType, TokenDataType.Int);
         keywordMap["flt"] = new Token(TokenType.DataType, TokenDataType.Float);
         keywordMap["bol"] = new Token(TokenType.DataType, TokenDataType.Bool);
+        keywordMap["str"] = new Token(TokenType.DataType, TokenDataType.String);
 
         keywordMap["=="] = new Token(TokenType.CompEqual,"==");
         keywordMap["!="] = new Token(TokenType.NotEqual, "!=");
@@ -130,6 +132,10 @@ public class Tokenizer
             else if (char.IsAsciiLetter(curChar))
             {
                 AddToken(MakeKeyword());
+            }
+            else if(curChar == '"')
+            {
+                AddToken(MakeStringLit());
             }
 
             curChar = code[current];
@@ -254,6 +260,40 @@ public class Tokenizer
 
         return isFloat ? new Token(TokenType.FNum, num) : new Token(TokenType.INum, num);
 
+    }
+
+    private Token MakeStringLit()
+    {
+        Consume();
+        string value = "";
+        int startLine = lineCount;
+
+        while(current != '"')
+        {
+            if(current == '\0')
+            {
+                ErrorHandler.AddError(ErrorType.SyntaxError,startLine,"Reached EOF while reading string.",true);
+            }
+
+            if(current == '\\')
+            {
+                value += Consume() switch
+                {
+                    'n' => '\n',
+                    't' => '\t',
+                    '\\' => '\\',
+                    '"' => '"',
+                    _ => ' ' //Todo: error handle this
+                };
+                Consume();
+                continue;
+            }
+
+            value += current;
+            Consume();
+        }
+        Consume(); //Consume the last "
+        return new Token(TokenType.String, value);
     }
 
     private bool IsDigitOrDot(char c)

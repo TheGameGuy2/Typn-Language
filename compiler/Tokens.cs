@@ -7,7 +7,8 @@ public enum TokenType
     Null,
     FNum, //fnum, inum only tell if a number has a decimal point
     INum,
-    Bool, //bool litteral, true/false
+    Bool, //bool literal, true/false
+    String, //string literal
     Plus,
     Sub,
     Mul,
@@ -37,11 +38,14 @@ public enum TokenType
     EOF
 }
 
+
 public static class TokenDataType
 {
+    //This is used for the value of data type tokens so we can compare their data types without magic values.
     public readonly static string Int = "int";
     public readonly static string Float = "float";
     public readonly static string Bool = "bool";
+    public readonly static string String = "str";
 
 }
 
