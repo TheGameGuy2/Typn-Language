@@ -47,7 +47,8 @@ public enum IRDataType
     None,
     Float,
     Int,
-    Bool
+    Bool,
+    String
 }
 
 //switch to class if something breaks
@@ -161,6 +162,10 @@ public class IRBuilder
         else if (value == TokenDataType.Bool)
         {
             return IRDataType.Bool;
+        }
+        else if(value == TokenDataType.String)
+        {
+            return IRDataType.String;
         }
         else
         {

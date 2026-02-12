@@ -155,7 +155,10 @@ public partial class Parser
     {
         Token currentToken = Consume(); 
 
-        if(currentToken.type == TokenType.INum || currentToken.type == TokenType.FNum || currentToken.type == TokenType.Bool)
+        if(currentToken.type == TokenType.INum 
+            || currentToken.type == TokenType.FNum 
+            || currentToken.type == TokenType.Bool 
+            || currentToken.type == TokenType.String)
         {
             ASTNode nNode = new ConstValue(currentToken);
             return nNode;

@@ -7,7 +7,9 @@ This programm calculates fibonaci numbers
 count is used for the loop, it represents the ammount of numbers to be calculated
 ###
 
-str:my_name = "Andre"
+str:my_name = "Something"
+
+my_name = my_name + " Hi"
 
 int:count = 1
 

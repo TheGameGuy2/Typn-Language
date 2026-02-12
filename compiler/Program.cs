@@ -21,7 +21,6 @@ foreach(Token tok in tokens)
     Console.WriteLine(tok);
 }
 
-return;
 Console.WriteLine("--- AST ---");
 
 Parser p = new(tokens);
@@ -29,10 +28,10 @@ Parser p = new(tokens);
 List<ASTNode> nodes = p.ParseModule();
 
 
-/*foreach(ASTNode node in nodes)
+foreach(ASTNode node in nodes)
 {
     node.Show(0);
-}*/
+}
 
 
 SymbolResolver symbResolver = new();

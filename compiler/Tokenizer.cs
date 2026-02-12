@@ -268,14 +268,20 @@ public class Tokenizer
         string value = "";
         int startLine = lineCount;
 
-        while(current != '"')
+        while(code[current] != '"')
         {
-            if(current == '\0')
+            if(Peek() == '\0')
             {
-                ErrorHandler.AddError(ErrorType.SyntaxError,startLine,"Reached EOF while reading string.",true);
+                ErrorHandler.AddError(
+                    ErrorType.SyntaxError,
+                    startLine,
+                    "Reached EOF while reading string. Did you forget to close '\"' ?",
+                    true);
             }
 
-            if(current == '\\')
+            if (code[current] == '\n') { Consume(); continue; }
+
+            if(code[current] == '\\')
             {
                 value += Consume() switch
                 {
@@ -289,7 +295,7 @@ public class Tokenizer
                 continue;
             }
 
-            value += current;
+            value += code[current];
             Consume();
         }
         Consume(); //Consume the last "
