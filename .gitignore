@@ -19,6 +19,8 @@
 #Windows VSCode files I don't need 
 *.sln 
 *.localnotes
+launch.json
+tasks.json
 
 # Mono auto generated files
 mono_crash.*
