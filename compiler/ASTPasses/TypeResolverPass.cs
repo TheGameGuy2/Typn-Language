@@ -4,20 +4,9 @@ using IR;
 using Lexing;
 using Parsing;
 
-
 namespace ASTPasses;
 
-internal struct Operation
-{
-    public TokenType operation;
-    public IRDataType[,] allowedDT;
 
-    
-}
-
-internal static class OperationVerifier
-{
-}
 
 public class TypeResolver : ASTVisitor
 {
