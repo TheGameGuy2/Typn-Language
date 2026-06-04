@@ -1,4 +1,5 @@
 using System.Net.Http.Headers;
+using System.Reflection.Metadata;
 using Errors;
 using IR;
 using Lexing;
@@ -7,21 +8,77 @@ using Parsing;
 namespace ASTPasses;
 
 
+internal record struct TypeTuple(IRDataType type1, IRDataType type2);
+
 
 public class TypeResolver : ASTVisitor
 {
 
-    //TODO: for cleaner code, map what operations are supported between what data types
+
+    private readonly Dictionary<(IRDataType,IRDataType), HashSet<TokenType>> acceptedOps = new();
+
+    
+    //TODO: Automatic float convert of constant values if added float(4:int)+float(2.4)
+    public TypeResolver()
+    {
+
+        HashSet<TokenType> intOps = 
+        [TokenType.Plus, TokenType.Sub,
+         TokenType.Mul, TokenType.Div, 
+         TokenType.Lesser, TokenType.LessEqual,
+         TokenType.Greater, TokenType.GreaterEqual,
+         TokenType.CompEqual, TokenType.NotEqual
+        ];
+        acceptedOps.Add(new(IRDataType.Int, IRDataType.Int), intOps);
+
+        HashSet<TokenType> fltOps = 
+        [TokenType.Plus, TokenType.Sub,
+         TokenType.Mul, TokenType.Div,
+         TokenType.Lesser, TokenType.LessEqual,
+         TokenType.Greater, TokenType.GreaterEqual,
+         TokenType.CompEqual, TokenType.NotEqual
+        ];
+        acceptedOps.Add(new(IRDataType.Float, IRDataType.Float), fltOps);
+
+        HashSet<TokenType> boolOps = 
+        [ TokenType.And, TokenType.Not,
+          TokenType.Or
+        ];
+        acceptedOps.Add(new(IRDataType.Bool, IRDataType.Bool), boolOps);
+
+
+    }
+
+
+    
 
     public override void Visit(BinOp node)
     {
-        //Todo: resolve names based on data types, if type isn't found, search scopes for var with correct type
-        if(node.left.dataType != node.right.dataType)
+        
+        if(!acceptedOps.TryGetValue(new(node.left.dataType,node.right.dataType),out var supportedOps))
         {
             ErrorHandler.AddError(ErrorType.TypeError, node.GetLine(), $"Can not apply '{node.value.value}' on {node.left.dataType} and {node.right.dataType}");
         }
+        else if(!supportedOps.Contains(node.value.type))
+        {
+            ErrorHandler.AddError(ErrorType.TypeError, node.GetLine(), $"Can not apply '{node.value.value}' on {node.left.dataType} and {node.right.dataType}");
+        }
+        
 
         node.dataType = node.left.dataType;
+    }
+
+    public override void Visit(Name node)
+    {
+
+        if(node.resolvedSymbol!=null)
+        {
+            node.dataType = node.resolvedSymbol.DataType;
+        }
+        else
+        {
+            ErrorHandler.AddError(ErrorType.TypeError, node.GetLine(), $"Found name '{node.value}' with unresolved symbol in TypeResolve.");
+        }
     }
 
     public override void Visit(NotNode node)
@@ -40,20 +97,25 @@ public class TypeResolver : ASTVisitor
 
     public override void Visit(VariableNode node)
     {
-        node.dataType = IRBuilder.GetDTFromToken(node.dataTypeToken);
-
-        if(node.varValue.dataType != node.dataType)
+        Symbol? varSymbol = node.name.resolvedSymbol; //switch this to Name node
+        if(varSymbol!=null)
         {
-            if(node.varValue is ConstValue)
+            node.dataType = node.name.resolvedSymbol.DataType;
+        }
+        //else: Symbol not found, error in Symbol resolver.
+
+        if(node.varValueExpr.dataType != node.dataType && node.varValueExpr.dataType != IRDataType.None)
+        {
+            if(node.varValueExpr is ConstValue)
             {
-                if(node.varValue.dataType == IRDataType.Int && node.dataType == IRDataType.Float)
+                if(node.varValueExpr.dataType == IRDataType.Int && node.dataType == IRDataType.Float)
                 {
-                    node.varValue.dataType = IRDataType.Float; //23 can be interpreted as 23.0
+                    node.varValueExpr.dataType = IRDataType.Float; //23 can be interpreted as 23.0
                     return;
                 }
             }    
             
-            ErrorHandler.AddError(ErrorType.TypeError, node.GetLine(), $"Can not assign {node.varValue.dataType} to {node.dataType}");
+            ErrorHandler.AddError(ErrorType.TypeError, node.GetLine(), $"Can not assign {node.varValueExpr.dataType} to {node.dataType}");
         }
 
     }

@@ -48,6 +48,14 @@ public partial class Parser
         }
     }
 
+    private void Expect(TokenType type,string expected)
+    {
+        if(tokens[current].type != type)
+        {
+            ErrorHandler.AddError(ErrorType.SyntaxError, tokens[current].line, $@"Expected {expected} got '{tokens[current].value.Replace("\n","\\n")}'", true);
+            //throw new Exception($"Error: Expected {type} got {tokens[current]}");
+        }
+    }
     
     //Rule: All parse methods must stop at last related token. 
 
@@ -121,8 +129,8 @@ public partial class Parser
         ASTNode left = MakeAdditive();
 
         
-
-        TokenType[] compareOps = [TokenType.And,
+        HashSet<TokenType> compareOps = 
+                                 [TokenType.And,
                                     TokenType.Or,
                                     TokenType.Greater,
                                     TokenType.Lesser,
@@ -175,13 +183,13 @@ public partial class Parser
 
             ASTNode expr = ParseExpression();
             Consume();
-            Expect(TokenType.ClosedBrace); //Error Wrong closed brace
+            Expect(TokenType.ClosedBrace, "'}'"); //Error Wrong closed brace
             
             return expr;
         }
         else
         {   
-            throw new Exception($"Expected Value Expression or Name, got {currentToken}");
+            throw new Exception($"Expected Value, Expression or Name. Got {currentToken}");
         }
         return new ASTNode();
     }

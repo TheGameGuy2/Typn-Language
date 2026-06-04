@@ -5,7 +5,7 @@ using Parsing;
 
 namespace ASTPasses;
 
-public record class Symbol(string Name, IRDataType DataType,Scope Scope);
+public record class Symbol(string Name, IRDataType DataType, Scope Scope);
 
 public class Scope
 {
@@ -41,6 +41,25 @@ public class Scope
     public void AddSymbol(string name, IRDataType dataType = IRDataType.None)
     {
         Symbols.Add(name, new Symbol(name, dataType, this));
+    }
+
+    public void Show(int depth = 0)
+    {
+        string outStr = "{" + $" {depth} " + "}";
+
+        string distStr = "";
+        for(int i = 0; i<depth; i++)
+        {
+            distStr += "-";
+        }
+
+        Console.WriteLine(outStr);
+
+        foreach(Symbol value in Symbols.Values)
+        {
+            Console.WriteLine(distStr + value.Name +":"+ value.DataType);
+        }
+
     }
 
 }

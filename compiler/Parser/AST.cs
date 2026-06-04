@@ -6,6 +6,7 @@ using ASTPasses;
 
 namespace Parsing;
 
+//Base class
 public class ASTNode
 {
     public Token value;
@@ -40,6 +41,7 @@ public class ASTNode
             TokenType.FNum => IRDataType.Float,
             TokenType.INum => IRDataType.Int,
             TokenType.Bool => IRDataType.Bool,
+            TokenType.String => IRDataType.String,
             TokenType.DataType => IRBuilder.GetDTFromToken(tok),
             _ => IRDataType.None
         };
@@ -51,6 +53,7 @@ public class ASTNode
     
 }
 
+//Binary operations, +, -, * , / ...
 public class BinOp : ASTNode
 {
     public ASTNode left;
@@ -98,8 +101,12 @@ public class BinOp : ASTNode
 
 }
 
+
 public class Operator : ASTNode
 {
+
+    
+
     public Operator(Token value)
     {
         this.value = value;
@@ -112,6 +119,7 @@ public class Operator : ASTNode
 
 }
 
+//Constant value
 public class ConstValue : ASTNode
 {
     public ConstValue(Token value)
@@ -137,8 +145,14 @@ public class ConstValue : ASTNode
         //This is so stupid I have to manage data types smarter somehow.
         builder.MakeConstant(value.value, type);
     }
+
+    public override void AcceptVisitor(ASTVisitor visitor)
+    {
+        visitor.Visit(this);
+    }
 }
 
+// - prefix, -1 , -(23*32+2)
 public class NegateNode : ASTNode
 {
     public ASTNode Expr;
@@ -192,6 +206,7 @@ public class NegateNode : ASTNode
 
 }
 
+//bool not, !true == false
 public class NotNode : ASTNode
 {
     public ASTNode Expr;
@@ -223,6 +238,7 @@ public class NotNode : ASTNode
     }
 }
 
+//This should be a constant
 public class NullValue : ASTNode
 {
     public NullValue()
@@ -231,14 +247,15 @@ public class NullValue : ASTNode
     }
 }
 
-
+//Names
 public class Name : ASTNode
 {
-    public Symbol? resolvedSymbol;
+    public Symbol? resolvedSymbol; 
 
     public Name(Token value)
     {
         this.value = value;
+        
     }
 
     public override void MakeInstruction(IRBuilder builder)
@@ -255,45 +272,47 @@ public class Name : ASTNode
 
 public class VariableNode : ASTNode //Declaration
 {
-    public Token name;
+    public Name name;
     public Token dataTypeToken;
+    public ASTNode varValueExpr;
 
-    public ASTNode varValue;
-
-    public VariableNode(Token name, Token dataTypeToken,ASTNode value)
+    public VariableNode(Name name, Token dataTypeToken,ASTNode value)
     {
         this.name = name;
         this.dataTypeToken = dataTypeToken;
-        this.varValue = value;
+        this.varValueExpr = value;
+        
+        this.value.line = name.value.line;
 
         dataType = GetValueDataType(dataTypeToken);
     }
 
     public override void Show(int depth)
     {
+        
         value.value = $"VAR: {dataTypeToken} {name.value} =";
         base.Show(depth);
-        varValue.Show(depth + 1);
+        varValueExpr.Show(depth + 1);
     }
 
     public override void MakeInstruction(IRBuilder builder)
     {
-        if(varValue.value.type == TokenType.Null)
+        if(varValueExpr.value.type == TokenType.Null)
         {
-            builder.MakeDefine(name.value, IRBuilder.GetDTFromToken(dataTypeToken));
+            builder.MakeDefine(name.value.value, IRBuilder.GetDTFromToken(dataTypeToken));
             return;
         }
 
-        varValue.MakeInstruction(builder);
+        varValueExpr.MakeInstruction(builder);
 
-        builder.MakeDefine(name.value, IRBuilder.GetDTFromToken(dataTypeToken));
-        builder.MakeSet(name.value);
+        builder.MakeDefine(name.value.value, IRBuilder.GetDTFromToken(dataTypeToken));
+        builder.MakeSet(name.value.value);
     }
 
     public override void AcceptVisitor(ASTVisitor visitor)
     {
 
-        varValue.AcceptVisitor(visitor);
+        varValueExpr.AcceptVisitor(visitor);
         visitor.Visit(this);
     }
 
@@ -454,11 +473,8 @@ public class IfNode : ASTNode
 
         //builder.MakeConstant("0",IRDataType.Int);
         
-
-
         string endLabel = builder.NewLabelName();
 
-        
         expr.MakeInstruction(builder); 
 
         builder.MakeCmp();

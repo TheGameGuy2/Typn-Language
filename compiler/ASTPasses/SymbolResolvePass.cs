@@ -10,23 +10,36 @@ public class SymbolResolver : ASTVisitor
 {
 
     //This will be treated as a stack of symbols
-    private Stack<Scope> scopeStack = new();
+    private List<Scope> scopeStack = new();
+    private int stackPointer = 0;
+
     private int currentScope = 0;
 
 
     public SymbolResolver()
     {
-        scopeStack.Push(new Scope()); //Push top scope
+        scopeStack.Add(new Scope()); //Push top scope
+    }
+
+    public void DisplayScopes()
+    {
+        int count = 0;
+        foreach(Scope s in scopeStack)
+        {
+            s.Show(count);
+            count++;
+        }
     }
 
     private void EnterScope()
     {
-        scopeStack.Push(new Scope(scopeStack.Peek()));
+        scopeStack.Add(new Scope());
+        stackPointer++;
     }
 
     private void LeaveScope()
     {
-        scopeStack.Pop();
+        stackPointer--;
     }
 
     public override void Visit(BlockNode node)
@@ -45,22 +58,34 @@ public class SymbolResolver : ASTVisitor
     {
 
         IRDataType dataType = IRBuilder.GetDTFromToken(node.dataTypeToken);
-        string name = node.name.value;
+        string name = node.name.value.value;
 
-        if(scopeStack.Peek().TryGetSymbol(name, out Symbol? symb))
+        if(scopeStack[stackPointer].TryGetSymbol(name, out Symbol? symb))
         {
-
             ErrorHandler.AddError(ErrorType.NameError, node.GetLine(), $"Symbol '{dataType}:{name}' gets redefined.");
             return;
         }
 
-        scopeStack.Peek().AddSymbol(name, dataType);
+        scopeStack[stackPointer].AddSymbol(name, dataType);
+
     }
 
     public override void Visit(Name node)
     {
-        if(!scopeStack.Peek().TryGetSymbol(node.value.value,out Symbol symb))
+        if(!scopeStack[stackPointer].TryGetSymbol(node.value.value,out Symbol symb))
         {
+            //Check upper scopes for definition.
+            int lookBackPtr = stackPointer-1;
+            while(lookBackPtr>=0)
+            {
+                if(scopeStack[lookBackPtr].TryGetSymbol(node.value.value,out Symbol uSymb))
+                { 
+                    node.resolvedSymbol = uSymb;
+                    node.dataType = uSymb.DataType;
+                    return;
+                }
+                lookBackPtr--;
+            }
             //used not defined name
             ErrorHandler.AddError(ErrorType.NameError, node.GetLine(), $"Name '{node.value.value}' not defined in current scope.");
         }
@@ -71,4 +96,8 @@ public class SymbolResolver : ASTVisitor
         }
     }
 
+    public List<Scope> GetScopes()
+    {
+        return scopeStack;
+    }
 }

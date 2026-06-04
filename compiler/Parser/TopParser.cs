@@ -158,22 +158,22 @@ public partial class Parser
     {
         Token dataType = Consume();
         Consume(); //Expect : here
-        Expect(TokenType.Colon);
+        Expect(TokenType.Colon,"':'");
 
         Token name = Consume();
-        Expect(TokenType.Name);
+        Expect(TokenType.Name, "name");
 
         
 
         if(Consume().type == TokenType.SemiColon)
         {
             
-            return new VariableNode(name, dataType,new NullValue());
+            return new VariableNode(new Name(name), dataType,new NullValue());
         }
         else
         {
-            Expect(TokenType.Equal);
-            return new VariableNode(name, dataType, ParseExpression());
+            Expect(TokenType.Equal, "'=' or ';'");
+            return new VariableNode(new Name(name), dataType, ParseExpression());
         }
 
     }

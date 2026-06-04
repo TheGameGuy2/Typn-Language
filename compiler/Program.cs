@@ -24,7 +24,6 @@ foreach(Token tok in tokens)
 Console.WriteLine("--- AST ---");
 
 Parser p = new(tokens);
-//p.ParseExpression().Show(0);
 List<ASTNode> nodes = p.ParseModule();
 
 
@@ -40,8 +39,10 @@ TypeResolver typeResolver = new();
 foreach(ASTNode node in nodes)
 {
     node.AcceptVisitor(symbResolver);
-    node.AcceptVisitor(typeResolver);
+   node.AcceptVisitor(typeResolver);
 }
+
+symbResolver.DisplayScopes();
 
 
 if(ErrorHandler.HasErrors())
@@ -61,8 +62,8 @@ foreach(ASTNode node in nodes)
 
 builder.ShowInstructions();
 
-
+/*
 Console.WriteLine("--- Executing ---");
 VM vm = new VM(builder.GetInstructions());
 vm.Run();
-//Console.WriteLine(p.ParseExpression().MakeInstruction());
+//Console.WriteLine(p.ParseExpression().MakeInstruction());*/

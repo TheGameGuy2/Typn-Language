@@ -7,15 +7,22 @@ This programm calculates fibonaci numbers
 count is used for the loop, it represents the ammount of numbers to be calculated
 ###
 
-str:my_name = "Something"
+flt:i;
 
-my_name = my_name + " Hi"
 
+while(i<10.0)
+{
+    flt:j = 23.0
+}
+
+
+
+###
 int:count = 1
 
 //Storing the last 2 numbers, functions WIP, arrays WIP
 int:one = 0
-int:two = 1
+int:two = 1*4
 
 while(count<=(count*count/count - (0-0+1-1+count) + 12)) //doing some conditions tests
 {
@@ -31,6 +38,7 @@ while(count<=(count*count/count - (0-0+1-1+count) + 12)) //doing some conditions
 
 print(two)
 
+###
 ###
 int:cur = 65
 
