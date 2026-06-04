@@ -8,6 +8,7 @@ namespace IR;
 
 public enum InstrType : byte
 {
+    End,
     Define,
     Add,
     Mul,
@@ -20,13 +21,13 @@ public enum InstrType : byte
     Set,
     Call,
     CallNative,
-    Comp,
-    CmpG,
-    CmpGEq,
-    CmpL,
-    CmpLEq,
-    CmpEq,
-    CmpNEq,
+    Comp, //Sets the compare flag.
+    CmpG, //pushes bool value of comparisson.
+    CmpGEq, //pushes bool value of comparisson.
+    CmpL,//pushes bool value of comparisson.
+    CmpLEq,//pushes bool value of comparisson.
+    CmpEq,//pushes bool value of comparisson.
+    CmpNEq,//pushes bool value of comparisson.
     Push,
     Load,
     Jmp,
@@ -169,7 +170,7 @@ public class IRBuilder
         }
         else
         {
-            throw new Exception($"[IR Gen] Can not get datatype from vlaue {dataType.value}");
+            throw new Exception($"[IR Gen] Can not get datatype from value {dataType.value}");
         }
         
     }

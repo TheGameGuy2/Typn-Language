@@ -6,13 +6,24 @@
 #define print(x) std::cout<< x;
 #define NL std::cout << "\n";
 
+typedef unsigned char byte;
+
 typedef union Value
 {
-    int32_t iVal;
-    float fVal;
+    uint32_t intVal;
+    float floatVal;
+    bool boolVal;
 } Value;
 
-inline Value FetchInt(void* startAdr,uint32_t* current)
+
+typedef struct Stack
+{
+    void* values;
+    
+    uint32_t pointer = 0;
+} Stack;
+
+inline Value FetchInstructionInt(void* startAdr,uint32_t* current)
 {
     //Expecting current to be at the first byte
 
@@ -23,25 +34,59 @@ inline Value FetchInt(void* startAdr,uint32_t* current)
     print(startAdr) NL
 
     Value val;
-    val.iVal = *(int32_t*) startAdr;
-    print(val.iVal) NL
+    val.intVal = *(int32_t*)startAdr;
+    print(val.intVal) NL
 
     return val;
 }
 
 
+inline Value* PopStack(Stack& opStack)
+{
+    Value* val = &(((Value*)opStack.values)[opStack.pointer]);
+    opStack.pointer--;
+
+    return val;
+} 
+
+inline void PushStack(Value val, Stack& opStack)
+{
+    opStack.pointer++;
+    ((Value*)opStack.values)[opStack.pointer] = val;
+}
+
+//Opcode layout
+/*
+    B0      B1-B4
+    PUSH    VALUE
+    STORE   S_ADDRESS //stores instruction stack top in data stack
+    LOAD    S_ADDRESS //Loads from data stack into instruction stack
+
+*/
+#include "vm_body.hpp";
 
 void RunVM()
 { 
 
-    std::vector<unsigned char> bytecode = {1,0,0,0,67,1,0,0,0,0,67,2,0};
+    std::vector<byte> bytecode = {1,0,0,0,67,1,0,0,0,0,67,2,0};
     uint32_t current = -1;
 
-    Value stack[256];
-    uint32_t sPointer = 0;
+    //Value operationStack[256];
+    //uint32_t sPointer = 0;
+
+    Value opStack[256];
+
+    Stack operationStack = {};
+    operationStack.values = (void*)opStack;
 
 
-    void* instructionLabels[3] = {&&end,&&pushInt,&&addInt};
+    Value memStack[1024];
+    Stack memoryStack;
+    memoryStack.values = (void*)memStack;
+    
+    
+
+    void* instructionLabels[4] = {&&end,&&allocVar,&&pushInt,&&addInt};
 
     start:
 
@@ -50,28 +95,23 @@ void RunVM()
     goto *instructionLabels[bytecode[current]];
 
 
+    allocVar:
+        current++;
+        ((Value*)memoryStack.values)[memoryStack.pointer] = FetchInstructionInt(&bytecode[current],&current);
+        memoryStack.pointer++;
+    goto start;
+
     addInt:
-        uint32_t a = stack[sPointer].iVal;
-        sPointer--;
-        uint32_t b = stack[sPointer].iVal;
-        sPointer--;
-        Value val;
-        val.iVal = a+b;
-        stack[sPointer] = val;
-        print("Added") NL
-        sPointer++;
+        
 
     goto start;
 
     pushInt:
-        stack[sPointer] = FetchInt(&bytecode[current],&current);
-        sPointer++;
-        print("pushed") NL
-        print("At") NL print(current) NL
+        
     goto start;
 
     end:
-        std::cout<<"Programm end."<<  "Top of Stack:" << stack[sPointer-1].iVal <<"\n";
+        std::cout<<"Programm end."<<  "Top of Stack:" << ((Value*)operationStack.values)[operationStack.pointer-1].iVal <<"\n";
     
 
 

@@ -1,4 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
+
 using Lexing;
 
 namespace Parsing;
@@ -21,6 +21,7 @@ public partial class Parser
 
     private ASTNode ParseStatement()
     {
+        TokenType[] operators = [TokenType.Plus, TokenType.Sub, TokenType.Mul, TokenType.Div];
         ASTNode statement;
 
         if(Peek().type == TokenType.DataType)
@@ -41,6 +42,10 @@ public partial class Parser
             {
                 statement = MakeAssign();
             }
+            else if(operators.Contains(Peek(2).type) && Peek(3).type == TokenType.Equal)
+            {
+                statement = MakePrefixAssign();
+            }
             else
             {
                 statement = MakeCall();
@@ -57,6 +62,25 @@ public partial class Parser
         Expect(TokenType.NewLine);
 
         return statement;
+    }
+
+    private ASTNode MakePrefixAssign()
+    {
+        
+        Token name = Consume();
+        Expect(TokenType.Name);
+
+        Token op = Consume();
+        //Expect operator
+        Consume();
+        Expect(TokenType.Equal);
+
+
+        BinOp operation = new(new Name(name), new Operator(op), ParseExpression());
+        AssignNode node = new(new Name(name),operation);
+        
+        return node;
+        
     }
 
     private ASTNode MakeWhile()

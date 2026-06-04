@@ -131,19 +131,10 @@ public class ConstValue : ASTNode
 
     public override void MakeInstruction(IRBuilder builder)
     {
-        IRDataType type = IRDataType.None;
         
-        if(value.type == TokenType.FNum)
-        {
-            type = IRDataType.Float;
-        }
-        else if(value.type == TokenType.INum)
-        {
-            type = IRDataType.Int;
-        }
         
         //This is so stupid I have to manage data types smarter somehow.
-        builder.MakeConstant(value.value, type);
+        builder.MakeConstant(value.value, GetValueDataType(value));
     }
 
     public override void AcceptVisitor(ASTVisitor visitor)
@@ -490,8 +481,9 @@ public class IfNode : ASTNode
 
     public override void AcceptVisitor(ASTVisitor visitor)
     {
-        visitor.Visit(this);
+
         expr.AcceptVisitor(visitor);
+        visitor.Visit(this);
         body.AcceptVisitor(visitor);
     }
 }
@@ -542,8 +534,10 @@ public class WhileNode : ASTNode
 
     public override void AcceptVisitor(ASTVisitor visitor)
     {
-        visitor.Visit(this);
+
         expr.AcceptVisitor(visitor);
+        visitor.Visit(this);
         body.AcceptVisitor(visitor);
+        visitor.Exit(this);
     }
 }

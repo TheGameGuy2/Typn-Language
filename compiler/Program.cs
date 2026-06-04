@@ -1,4 +1,5 @@
 ﻿using ASTPasses;
+using CodeGen;
 using Errors;
 using IR;
 using Lexing;
@@ -20,6 +21,7 @@ foreach(Token tok in tokens)
 {
     Console.WriteLine(tok);
 }
+
 
 Console.WriteLine("--- AST ---");
 
@@ -62,8 +64,14 @@ foreach(ASTNode node in nodes)
 
 builder.ShowInstructions();
 
-/*
-Console.WriteLine("--- Executing ---");
-VM vm = new VM(builder.GetInstructions());
-vm.Run();
+
+Console.WriteLine("--- Code Gen ---");
+
+CodeGenerator generator = new(builder.GetInstructions());
+File.WriteAllBytes("code.tpc",generator.Generate().ToArray());
+
+
+//Console.WriteLine("--- Executing ---");
+//VM vm = new VM(builder.GetInstructions());
+//vm.Run();
 //Console.WriteLine(p.ParseExpression().MakeInstruction());*/

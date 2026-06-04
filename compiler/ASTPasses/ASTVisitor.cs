@@ -31,7 +31,7 @@ public abstract class ASTVisitor
     public virtual void Visit(IfNode node){}
 
     public virtual void Visit(WhileNode node){}
-
+    public virtual void Exit(WhileNode node){}
     public virtual void Exit(BlockNode node){}
 
 }
