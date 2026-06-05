@@ -62,13 +62,13 @@ public class CodeGenerator
 
             switch(instr.type)
             {
-                case InstrType.Define:
+                case InstrType.Define: //No arguments passed, define always allocates one Value
                     varStackOffset[instr.GetValue().value] = currentStackBase+currentStackOffset;
                     currentStackOffset += 1;
                 break;
 
                 case InstrType.Set:
-                //Stack address
+                //mem Stack address
                     foreach(byte b in BitConverter.GetBytes(varStackOffset[instr.GetValue().value]))
                     {
                         code.Add(b);
