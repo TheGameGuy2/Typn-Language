@@ -92,7 +92,7 @@ public class CodeGenerator
                 break;
 
                 case InstrType.Jmp | InstrType.JmpFalse | InstrType.JmpTrue:
-                //Address
+                //Address in instructions, fuck.
                     foreach(byte b in GetBytes(instr.instrDataType, instr.GetValue().value))
                     {
                         code.Add(b);
