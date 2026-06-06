@@ -173,11 +173,11 @@ public class CodeGenerator
             }
         }
 
-        foreach(KeyValuePair<string,byte[]> label in labelDict)
-        {
-            Console.WriteLine(label.Key);
-            Console.WriteLine(BitConverter.ToInt32(label.Value).ToString());
-        }
+        //foreach(KeyValuePair<string,byte[]> label in labelDict)
+        //{
+        //    Console.WriteLine(label.Key);
+        //    Console.WriteLine(BitConverter.ToInt32(label.Value).ToString());
+        //}
 
         code.Add(0); //program end
 
