@@ -2,7 +2,7 @@
 
 <p>Typn comes from "typed Python" as this language is inspired by Python, and includes some C elements like static typing.</br>
 It was created because I needed a more performant and more light weight language for console tools.<br>
-Python is simply too slow for larger workloads, and C or C# require too much work. This is where Typn comes in.
+Python is simply too slow for larger workloads and C or C# require too much work. This is where Typn comes in.
 </p>
 
 <h2>General Info</h2>
