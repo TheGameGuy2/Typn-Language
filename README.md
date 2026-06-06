@@ -98,7 +98,7 @@ while(a<100000000):
 	a += 1
 print(a)
 ```
-Time:
+Time:<br>
 real	0m8.596s<br>
 user	0m8.499s<br>
 sys	0m0.048s<br>
@@ -114,7 +114,7 @@ while(count<100000000)
 print(count)
 
 ```
-Time:
+Time:<br>
 real	0m2.517s<br>
 user	0m2.454s<br>
 sys	0m0.029s<br>
