@@ -53,7 +53,7 @@ public partial class Parser
         }
         else
         {
-            Console.WriteLine("Tried to parse empty (\\n) statement");
+            //Console.WriteLine("Tried to parse empty (\\n) statement");
             Consume();
             return ParseStatement();
         }

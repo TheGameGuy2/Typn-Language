@@ -33,6 +33,8 @@ if(!File.Exists(args[0]))
     throw new Exception("File not found :c");
 }
 
+path = args[0];
+
 Tokenizer t = new(File.ReadAllText(path));
 
 List<Token> tokens = t.MakeTokens();

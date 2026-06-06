@@ -9,23 +9,23 @@ public record class Symbol(string Name, IRDataType DataType, Scope Scope);
 
 public class Scope
 {
-    public Scope? Parent;
-    public Dictionary<string, Symbol> Symbols = new();
+    public Scope? parent;
+    public Dictionary<string, Symbol> symbols = new();
 
     public Scope(Scope? parent = null)
     {
-        Parent = parent;
+        this.parent = parent;
     }
 
     public bool TryGetSymbol(string name, out Symbol? symb)
     {
-        if(Symbols.TryGetValue(name,out Symbol? symbol))
+        if(symbols.TryGetValue(name,out Symbol? symbol))
         {
             symb = symbol;
             return true;
         }
 
-        if (Parent!=null && Parent.TryGetSymbol(name, out symb))
+        if (parent!=null && parent.TryGetSymbol(name, out symb))
         {
             return true;
         }
@@ -40,7 +40,7 @@ public class Scope
     
     public void AddSymbol(string name, IRDataType dataType = IRDataType.None)
     {
-        Symbols.Add(name, new Symbol(name, dataType, this));
+        symbols.Add(name, new Symbol(name, dataType, this));
     }
 
     public void Show(int depth = 0)
@@ -55,7 +55,7 @@ public class Scope
 
         Console.WriteLine(outStr);
 
-        foreach(Symbol value in Symbols.Values)
+        foreach(Symbol value in symbols.Values)
         {
             Console.WriteLine(distStr + value.Name +":"+ value.DataType);
         }
