@@ -1,61 +1,113 @@
 
 ###
+//Compiler test 1, store, set, load, push.
+int:a = 67
+print(a)
+###
+
+###
+//Compiler test 2, 2 vars, memory.
+
+int:a = 32
+int:b = 8
+
+print(a+b)
+###
+
+###
+//Compiler test 3, float.
+
+flt:a = 6.7
+flt:b;
+b = 0.3
+print(a+b)
+###
+
+###
+//Compiler test 4, bool
+bol:a = false
+bol:b = true
+print(!a && b)
+###
+
+###
+//Compiler test 5, compares and jumps
+
+int:a = 3
+
+if(a == 3)
+{
+    print(1) //a is 3
+}
+
+if(a < 2)
+{
+    print(0)
+}
+
+if(a > 2)
+{
+    print(1)
+}
+
+if(a <= 2)
+{
+    print(0)
+}
+
+if(a >= 3)
+{
+    print(1)
+}
+
+if(a <= 3)
+{
+    print(1)
+}
+
+if(a > 3)
+{
+    print(0)
+}
+
+//Test is passed if we don't see a single 0, and 4 1s
+###
+
+
+
+
+###
 This programm calculates fibonaci numbers
 count is used for the loop, it represents the ammount of numbers to be calculated
 ###
 
-if(1 != 2)
-{
-    flt:b = 3.14
-}
 
-int:i = 0
-
-int:y = 0
-
-
-bol:test = (!false && true)
-
-
-
-while(i<10)
-{
-    int:j = 10
-    while(j>0)
-    {
-        
-        j -= 1
-    }
-
-    i+=1
-}
-
-print(y)
-print(test)
-
-
-###
 int:count = 1
 
 //Storing the last 2 numbers, functions WIP, arrays WIP
 int:one = 0
-int:two = 1*4
+int:two = 1
+int:temp;
 
-while(count<=(count*count/count - (0-0+1-1+count) + 12)) //doing some conditions tests
+while(count < 13) 
 {
-    
-    count = count + 1
+    print(one)
 
-    int:temp = one
+
+    count += 1
+
+    temp = one + two
 
     one = two
-    two = two + temp
+    two = temp
+
+    
     
 }
 
-print(two)
+//print(two)
 
-###
+
 ###
 int:cur = 65
 

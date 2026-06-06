@@ -54,7 +54,10 @@ public class TypeResolver : ASTVisitor
 
     public override void Visit(BinOp node)
     {
+        HashSet<TokenType> compareTypes = [TokenType.Lesser, TokenType.Greater, TokenType.LessEqual, TokenType.GreaterEqual];
+
         
+
         if(!acceptedOps.TryGetValue(new(node.left.dataType,node.right.dataType),out var supportedOps))
         {
             ErrorHandler.AddError(ErrorType.TypeError, node.GetLine(), $"Can not apply '{node.value.value}' on {node.left.dataType} and {node.right.dataType}");

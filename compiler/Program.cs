@@ -7,7 +7,9 @@ using Parsing;
 using Runner;
 using System.IO;
 
-Console.WriteLine("Hello, World!");
+
+
+
 
 Tokenizer t = new(File.ReadAllText("main.tph"));
 

@@ -5,6 +5,7 @@
 #include <vector>
 #define print(x) std::cout<< x;
 #define NL std::cout << "\n";
+#define winput getchar();
 
 typedef char byte;
 
@@ -14,6 +15,14 @@ typedef struct Stack
     
     uint32_t pointer = 0;
 } Stack;
+
+typedef union Value
+{
+	int32_t intVal;
+	uint32_t uintVal;
+	float floatVal;
+	bool boolVal;
+} Value;
 
 inline Value* PopStack(Stack& opStack)
 {
@@ -28,23 +37,31 @@ inline void PushStack(Value val, Stack& opStack)
     opStack.pointer++;
     ((Value*)opStack.values)[opStack.pointer] = val;
 }
-typedef union Value
-{
-	uint32_t intVal;
-	float floatVal;
-	bool boolVal;
-} Value;inline Value FetchInstruction_int(void* startAdr,uint32_t* current)
-{
-    //Expecting current to be at the first byte
-    *current += sizeof(uint32_t);
 
-    Value val;
-    val.intVal = *(uint32_t*)startAdr;
-    return val;
-}inline Value FetchInstruction_float(void* startAdr,uint32_t* current)
+inline Value FetchInstruction_int(void* startAdr,uint32_t* current)
 {
     //Expecting current to be at the first byte
-    *current += sizeof(float);
+    *current += sizeof(int32_t)-1;
+	
+	#ifdef DEBUG
+	print("Fetch: current: ") print(*current) NL
+	#endif
+	
+    Value val;
+    val.intVal = *(int32_t*)startAdr;
+	
+	#ifdef DEBUG
+	print("Dec. Value: ") print(val.intVal) NL
+	winput
+	#endif
+
+    return val;
+}
+
+inline Value FetchInstruction_float(void* startAdr,uint32_t* current)
+{
+    //Expecting current to be at the first byte
+    *current += sizeof(float)-1;
 
     Value val;
     val.floatVal = *(float*)startAdr;
@@ -52,7 +69,7 @@ typedef union Value
 }inline Value FetchInstruction_bool(void* startAdr,uint32_t* current)
 {
     //Expecting current to be at the first byte
-    *current += sizeof(bool);
+    *current += sizeof(bool)-1;
 
     Value val;
     val.boolVal = *(bool*)startAdr;
@@ -60,126 +77,54 @@ typedef union Value
 }
 inline void Add_int(Stack& opStack)
 {
-	Value newVal;
-	newVal.intVal = PopStack(opStack)->intVal+PopStack(opStack)->intVal; 
-	PushStack(newVal,opStack);
+        Value newVal;
+        newVal.intVal = PopStack(opStack)->intVal+PopStack(opStack)->intVal; 
+        PushStack(newVal,opStack);
 }
 inline void Add_float(Stack& opStack)
 {
-	Value newVal;
-	newVal.floatVal = PopStack(opStack)->floatVal+PopStack(opStack)->floatVal; 
-	PushStack(newVal,opStack);
+        Value newVal;
+        newVal.floatVal = PopStack(opStack)->floatVal+PopStack(opStack)->floatVal; 
+        PushStack(newVal,opStack);
 }
 
-inline void Add_int(Stack& opStack)
-{
-	Value newVal;
-	newVal.intVal = PopStack(opStack)->intVal+PopStack(opStack)->intVal; 
-	PushStack(newVal,opStack);
-}
-inline void Add_float(Stack& opStack)
-{
-	Value newVal;
-	newVal.floatVal = PopStack(opStack)->floatVal+PopStack(opStack)->floatVal; 
-	PushStack(newVal,opStack);
-}
 inline void Sub_int(Stack& opStack)
 {
-	Value newVal;
-	newVal.intVal = PopStack(opStack)->intVal-PopStack(opStack)->intVal; 
-	PushStack(newVal,opStack);
+        Value newVal;
+        newVal.intVal = PopStack(opStack)->intVal-PopStack(opStack)->intVal; 
+        PushStack(newVal,opStack);
 }
 inline void Sub_float(Stack& opStack)
 {
-	Value newVal;
-	newVal.floatVal = PopStack(opStack)->floatVal-PopStack(opStack)->floatVal; 
-	PushStack(newVal,opStack);
+        Value newVal;
+        newVal.floatVal = PopStack(opStack)->floatVal-PopStack(opStack)->floatVal; 
+        PushStack(newVal,opStack);
 }
 
-inline void Add_int(Stack& opStack)
-{
-	Value newVal;
-	newVal.intVal = PopStack(opStack)->intVal+PopStack(opStack)->intVal; 
-	PushStack(newVal,opStack);
-}
-inline void Add_float(Stack& opStack)
-{
-	Value newVal;
-	newVal.floatVal = PopStack(opStack)->floatVal+PopStack(opStack)->floatVal; 
-	PushStack(newVal,opStack);
-}
-inline void Sub_int(Stack& opStack)
-{
-	Value newVal;
-	newVal.intVal = PopStack(opStack)->intVal-PopStack(opStack)->intVal; 
-	PushStack(newVal,opStack);
-}
-inline void Sub_float(Stack& opStack)
-{
-	Value newVal;
-	newVal.floatVal = PopStack(opStack)->floatVal-PopStack(opStack)->floatVal; 
-	PushStack(newVal,opStack);
-}
 inline void Mul_int(Stack& opStack)
 {
-	Value newVal;
-	newVal.intVal = PopStack(opStack)->intVal*PopStack(opStack)->intVal; 
-	PushStack(newVal,opStack);
+        Value newVal;
+        newVal.intVal = PopStack(opStack)->intVal*PopStack(opStack)->intVal; 
+        PushStack(newVal,opStack);
 }
 inline void Mul_float(Stack& opStack)
 {
-	Value newVal;
-	newVal.floatVal = PopStack(opStack)->floatVal*PopStack(opStack)->floatVal; 
-	PushStack(newVal,opStack);
+        Value newVal;
+        newVal.floatVal = PopStack(opStack)->floatVal*PopStack(opStack)->floatVal; 
+        PushStack(newVal,opStack);
 }
 
-inline void Add_int(Stack& opStack)
-{
-	Value newVal;
-	newVal.intVal = PopStack(opStack)->intVal+PopStack(opStack)->intVal; 
-	PushStack(newVal,opStack);
-}
-inline void Add_float(Stack& opStack)
-{
-	Value newVal;
-	newVal.floatVal = PopStack(opStack)->floatVal+PopStack(opStack)->floatVal; 
-	PushStack(newVal,opStack);
-}
-inline void Sub_int(Stack& opStack)
-{
-	Value newVal;
-	newVal.intVal = PopStack(opStack)->intVal-PopStack(opStack)->intVal; 
-	PushStack(newVal,opStack);
-}
-inline void Sub_float(Stack& opStack)
-{
-	Value newVal;
-	newVal.floatVal = PopStack(opStack)->floatVal-PopStack(opStack)->floatVal; 
-	PushStack(newVal,opStack);
-}
-inline void Mul_int(Stack& opStack)
-{
-	Value newVal;
-	newVal.intVal = PopStack(opStack)->intVal*PopStack(opStack)->intVal; 
-	PushStack(newVal,opStack);
-}
-inline void Mul_float(Stack& opStack)
-{
-	Value newVal;
-	newVal.floatVal = PopStack(opStack)->floatVal*PopStack(opStack)->floatVal; 
-	PushStack(newVal,opStack);
-}
 inline void Div_int(Stack& opStack)
 {
-	Value newVal;
-	newVal.intVal = PopStack(opStack)->intVal/PopStack(opStack)->intVal; 
-	PushStack(newVal,opStack);
+        Value newVal;
+        newVal.intVal = PopStack(opStack)->intVal/PopStack(opStack)->intVal; 
+        PushStack(newVal,opStack);
 }
 inline void Div_float(Stack& opStack)
 {
-	Value newVal;
-	newVal.floatVal = PopStack(opStack)->floatVal/PopStack(opStack)->floatVal; 
-	PushStack(newVal,opStack);
+        Value newVal;
+        newVal.floatVal = PopStack(opStack)->floatVal/PopStack(opStack)->floatVal; 
+        PushStack(newVal,opStack);
 }
 
 inline void CmpEq_int(Stack& opStack)
@@ -455,40 +400,43 @@ inline void Define_bool(Stack& memStack)
 
 inline void Set_int(uint32_t* current, Stack& opStack, Stack& memStack, std::vector<byte>& bytecode)
 {
-	*current++;
+	*current+=1;
 	Value setAdr = FetchInstruction_int(&(bytecode[*current]),current);
 	((Value*)memStack.values)[setAdr.intVal] = *PopStack(opStack);
 }
 inline void Load_int(uint32_t* current, Stack& opStack, Stack& memStack, std::vector<byte>& bytecode)
 {
-	*current++;
+	*current+=1;
 	Value getAdr = FetchInstruction_int(&(bytecode[*current]),current);
 	PushStack(((Value*)memStack.values)[getAdr.intVal], opStack);
 }inline void Load_float(uint32_t* current, Stack& opStack, Stack& memStack, std::vector<byte>& bytecode)
 {
-	*current++;
+	*current+=1;
 	Value getAdr = FetchInstruction_int(&(bytecode[*current]),current);
 	PushStack(((Value*)memStack.values)[getAdr.intVal], opStack);
 }inline void Load_bool(uint32_t* current, Stack& opStack, Stack& memStack, std::vector<byte>& bytecode)
 {
-	*current++;
+	*current+=1;
 	Value getAdr = FetchInstruction_int(&(bytecode[*current]),current);
 	PushStack(((Value*)memStack.values)[getAdr.intVal], opStack);
-}inline void Push_int(uint32_t* current, Stack& opStack, std::vector<byte>& bytecode)
+}
+inline void Push_int(uint32_t* current, Stack& opStack, std::vector<byte>& bytecode)
 {
-	*current++;
+	*current += 1;
+	//print("Push: current: ") print(*current) NL
+	//winput
 	PushStack(FetchInstruction_int(&(bytecode[*current]),current),opStack);
 	
 }
 inline void Push_float(uint32_t* current, Stack& opStack, std::vector<byte>& bytecode)
 {
-	*current++;
+	*current+=1;
 	PushStack(FetchInstruction_float(&(bytecode[*current]),current),opStack);
 	
 }
 inline void Push_bool(uint32_t* current, Stack& opStack, std::vector<byte>& bytecode)
 {
-	*current++;
+	*current+=1;
 	PushStack(FetchInstruction_bool(&(bytecode[*current]),current),opStack);
 	
 }
@@ -531,10 +479,37 @@ inline void Comp_int(Stack& opStack, byte* cmpFlag)
 	}
 }
 
-inline void Jmp_int(uint32_t* current, std::vector<byte> bytecode)
+inline void Jmp_int(uint32_t* current, std::vector<byte>& bytecode)
 {
-	//TODO: fix jmp targets in CodeGen.
-	*current = ; 
+	*current += 1;
+	*current = FetchInstruction_int(&bytecode[*current],current).uintVal; 
+}
+
+inline void JmpTrue_int(uint32_t* current, std::vector<byte>& bytecode,const byte& cmpFlag)
+{
+	if(cmpFlag>0)
+	{
+		*current += 1;
+		*current = FetchInstruction_int(&bytecode[*current],current).uintVal; 
+	}
+	else
+	{
+		
+		*current += sizeof(int32_t);
+	}
+}
+
+inline void JmpFalse_int(uint32_t* current, std::vector<byte>& bytecode,const byte& cmpFlag)
+{
+	if(cmpFlag<=0)
+	{
+		*current += 1;
+		*current = FetchInstruction_int(&bytecode[*current],current).uintVal; 
+	}
+	else
+	{
+		*current += sizeof(int32_t);
+	}
 }
 
 inline void Call_int(Stack& opStack)
@@ -547,6 +522,7 @@ inline void Call_int(Stack& opStack)
 
 void RunVM(std::vector<byte>& bytecode) 
 {
+
 	Value opStack[256];
 
 	Stack operationStack;
@@ -563,43 +539,90 @@ void RunVM(std::vector<byte>& bytecode)
 
 	byte cmpFlag = 0;
 
-    void *instructionLabels[27*3] = 
+
+	std::string instructionLabelsDc[27*3] = 
  {
-&&_End_int,&&_End_float,&&_End_bool,
-&&_Define_int,&&_Define_float,&&_Define_bool,
-&&_Add_int,&&_Add_float,&&_Add_bool,
-&&_Mul_int,&&_Mul_float,&&_Mul_bool,
-&&_Sub_int,&&_Sub_float,&&_Sub_bool,
-&&_Div_int,&&_Div_float,&&_Div_bool,
-&&_Not_int,&&_Not_float,&&_Not_bool,
-&&_And_int,&&_And_float,&&_And_bool,
-&&_Or_int,&&_Or_float,&&_Or_bool,
-&&_Set_int,&&_Set_float,&&_Set_bool,
-&&_Call_int,&&_Call_float,&&_Call_bool,
-&&_CallNative_int,&&_CallNative_float,&&_CallNative_bool,
-&&_Comp_int,&&_Comp_float,&&_Comp_bool,
-&&_CmpG_int,&&_CmpG_float,&&_CmpG_bool,
-&&_CmpGEq_int,&&_CmpGEq_float,&&_CmpGEq_bool,
-&&_CmpL_int,&&_CmpL_float,&&_CmpL_bool,
-&&_CmpLEq_int,&&_CmpLEq_float,&&_CmpLEq_bool,
-&&_CmpEq_int,&&_CmpEq_float,&&_CmpEq_bool,
-&&_CmpNEq_int,&&_CmpNEq_float,&&_CmpNEq_bool,
-&&_Push_int,&&_Push_float,&&_Push_bool,
-&&_Load_int,&&_Load_float,&&_Load_bool,
-&&_Jmp_int,&&_Jmp_float,&&_Jmp_bool,
-&&_JmpTrue_int,&&_JmpTrue_float,&&_JmpTrue_bool,
-&&_JmpFalse_int,&&_JmpFalse_float,&&_JmpFalse_bool
+"_End_int","_End_float","_End_bool",
+"_Define_int","_Define_float","_Define_bool",
+"_Add_int","_Add_float","_Add_bool",
+"_Mul_int","_Mul_float","_Mul_bool",
+"_Sub_int","_Sub_float","_Sub_bool",
+"_Div_int","_Div_float","_Div_bool",
+"_Not_int","_Not_float","_Not_bool",
+"_And_int","_And_float","_And_bool",
+"_Or_int","_Or_float","_Or_bool",
+"_Set_int","_Set_float","_Set_bool",
+"_Call_int","_Call_float","_Call_bool",
+"_CallNative_int","_CallNative_float","_CallNative_bool",
+"_Comp_int","_Comp_float","_Comp_bool",
+"_CmpG_int","_CmpG_float","_CmpG_bool",
+"_CmpGEq_int","_CmpGEq_float","_CmpGEq_bool",
+"_CmpL_int","_CmpL_float","_CmpL_bool",
+"_CmpLEq_int","_CmpLEq_float","_CmpLEq_bool",
+"_CmpEq_int","_CmpEq_float","_CmpEq_bool",
+"_CmpNEq_int","_CmpNEq_float","_CmpNEq_bool",
+"_Push_int","_Push_float","_Push_bool",
+"_Load_int","_Load_float","_Load_bool",
+"_Jmp_int","_Jmp_float","_Jmp_bool",
+"_JmpTrue_int","_JmpTrue_float","_JmpTrue_bool",
+"_JmpFalse_int","_JmpFalse_float","_JmpFalse_bool"
 };
+
+    void* instructionLabels[27*3] = {
+		&&_End_int,&&_End_float,&&_End_bool,
+		&&_Define_int,&&_Define_float,&&_Define_bool,
+		&&_Add_int,&&_Add_float,&&_Add_bool,
+		&&_Mul_int,&&_Mul_float,&&_Mul_bool,
+		&&_Sub_int,&&_Sub_float,&&_Sub_bool,
+		&&_Div_int,&&_Div_float,&&_Div_bool,
+		&&_Not_int,&&_Not_float,&&_Not_bool,
+		&&_And_int,&&_And_float,&&_And_bool,
+		&&_Or_int,&&_Or_float,&&_Or_bool,
+		&&_Set_int,&&_Set_float,&&_Set_bool,
+		&&_Call_int,&&_Call_float,&&_Call_bool,
+		&&_CallNative_int,&&_CallNative_float,&&_CallNative_bool,
+		&&_Comp_int,&&_Comp_float,&&_Comp_bool,
+		&&_CmpG_int,&&_CmpG_float,&&_CmpG_bool,
+		&&_CmpGEq_int,&&_CmpGEq_float,&&_CmpGEq_bool,
+		&&_CmpL_int,&&_CmpL_float,&&_CmpL_bool,
+		&&_CmpLEq_int,&&_CmpLEq_float,&&_CmpLEq_bool,
+		&&_CmpEq_int,&&_CmpEq_float,&&_CmpEq_bool,
+		&&_CmpNEq_int,&&_CmpNEq_float,&&_CmpNEq_bool,
+		&&_Push_int,&&_Push_float,&&_Push_bool,
+		&&_Load_int,&&_Load_float,&&_Load_bool,
+		&&_Jmp_int,&&_Jmp_float,&&_Jmp_bool,
+		&&_JmpTrue_int,&&_JmpTrue_float,&&_JmpTrue_bool,
+		&&_JmpFalse_int,&&_JmpFalse_float,&&_JmpFalse_bool
+	};
+
 start:
-	 current++;
-goto *instructionLabels[bytecode[current]];_End_int:
-goto start;
+	
+
+current++;
+
+#ifdef DEBUG
+	print("Current: ") print(current) NL
+	print("Current Instr.: ") print(instructionLabelsDc[bytecode[current]]) NL
+	print("Stack ptr: ") print(operationStack.pointer) NL
+	print("Stack top: ") print(((Value*)operationStack.values)[operationStack.pointer].intVal) NL
+	winput
+#endif
+
+
+
+goto *instructionLabels[bytecode[current]];
+
+_end:
+return;
+
+_End_int:
+goto _end;
 
 _End_float:
-goto start;
+goto _end;
 
 _End_bool:
-goto start;
+goto _end;
 
 _Define_int:
 Define_int(memoryStack);
@@ -692,9 +715,11 @@ Set_int(&current,operationStack,memoryStack,bytecode);
 goto start;
 
 _Set_float:
+Set_int(&current,operationStack,memoryStack,bytecode);
 goto start;
 
 _Set_bool:
+Set_int(&current,operationStack,memoryStack,bytecode);
 goto start;
 
 _Call_int:
@@ -833,7 +858,7 @@ _Jmp_bool:
 goto start;
 
 _JmpTrue_int:
-JmpTrue_int(&current,operationStack);
+JmpTrue_int(&current,bytecode,cmpFlag);
 goto start;
 
 _JmpTrue_float:
@@ -843,7 +868,7 @@ _JmpTrue_bool:
 goto start;
 
 _JmpFalse_int:
-JmpFalse_int(&current,operationStack);
+JmpFalse_int(&current,bytecode,cmpFlag);
 goto start;
 
 _JmpFalse_float:

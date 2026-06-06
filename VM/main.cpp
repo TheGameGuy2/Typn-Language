@@ -4,12 +4,9 @@
 #include <cstdint>
 #include <vector>
 
-#define print(x) std::cout<< x;
-#define NL std::cout << "\n";
+//#define DEBUG
 
-
-
-#include "test.hpp";
+#include "vm_body.hpp"
 //typedef unsigned char byte;
 //
 //typedef union Value

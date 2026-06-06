@@ -32,7 +32,8 @@ public enum InstrType : byte
     Load,
     Jmp,
     JmpTrue,
-    JmpFalse
+    JmpFalse,
+    Label
 
 
 }
@@ -211,39 +212,42 @@ public class IRBuilder
     /// <param name="name"></param>
     public void MakeLabel(string name)
     {
-        labelDict[name] = instructions.Count-1;
+        //labelDict[name] = instructions.Count-1;
+        Instruction label = new(InstrType.Label, IRDataType.None);
+        label.AddValue(new(name,IRValueType.Const));
+        instructions.Add(label);
     }
 
     private void SubscribeToLabel(Instruction subscriber, string labelName)
     {
-        if(labelDict.ContainsKey(labelName))
-        {
-            subscriber.AddValue(new IRValue(labelDict[labelName].ToString(), IRValueType.Const));
-        }
-        else
-        {
-            labelSubscribers.TryGetValue(labelName, out List<Instruction>? waitingSubs);
-            if(waitingSubs != null)
-            {
-                labelSubscribers[labelName].Add(subscriber);
-            }
-            else
-            {
-                labelSubscribers[labelName] = [subscriber];
-            }
-        }
+        //if(labelDict.ContainsKey(labelName))
+        //{
+        //    subscriber.AddValue(new IRValue(labelDict[labelName].ToString(), IRValueType.Const));
+        //}
+        //else
+        //{
+        //    labelSubscribers.TryGetValue(labelName, out List<Instruction>? waitingSubs);
+        //    if(waitingSubs != null)
+        //    {
+        //        labelSubscribers[labelName].Add(subscriber);
+        //    }
+        //    else
+        //    {
+        //        labelSubscribers[labelName] = [subscriber];
+        //    }
+        //}
     }
 
     public void ClearLabel(string name)
     {
-        List<Instruction> subs = labelSubscribers[name];
-        
-        foreach(Instruction inst in subs)
-        {
-            inst.AddValue(new IRValue(labelDict[name].ToString(),IRValueType.Const));
-        }
-        labelSubscribers[name].Clear();
-        labelDict.Remove(name);
+        //List<Instruction> subs = labelSubscribers[name];
+        //
+        //foreach(Instruction inst in subs)
+        //{
+        //    inst.AddValue(new IRValue(labelDict[name].ToString(),IRValueType.Const));
+        //}
+        //labelSubscribers[name].Clear();
+        //labelDict.Remove(name);
     }
 
     //Assigns the later created labels to all subscribers
@@ -286,8 +290,9 @@ public class IRBuilder
     public void MakeJump(string jmpLabel)
     {
         Instruction instr = new Instruction(InstrType.Jmp);
+        instr.AddValue(new(jmpLabel,IRValueType.Const));
         instructions.Add(instr);
-        SubscribeToLabel(instr, jmpLabel);
+        
     }
 
     //Compares the top value of the stack with 0, sets comp flag to result.
@@ -300,48 +305,18 @@ public class IRBuilder
     public void MakeJmpTrue(string jmpLabel)
     {
         Instruction instr = new Instruction(InstrType.JmpTrue);
+        instr.AddValue(new(jmpLabel,IRValueType.Const));
         instructions.Add(instr);
-        SubscribeToLabel(instr, jmpLabel);
     }
 
     public void MakeJmpFalse(string jmpLabel)
     {
         Instruction instr = new Instruction(InstrType.JmpFalse);
+        instr.AddValue(new(jmpLabel,IRValueType.Const));
         instructions.Add(instr);
-        SubscribeToLabel(instr, jmpLabel);
-    }
-
-    /*
-    public void MakeJmpEQ(string jmpLabel)
-    {
-        Instruction instr = new Instruction(InstrType.Je);
-        instructions.Add(instr);
-        SubscribeToLabel(instr, jmpLabel);
     }
 
     
-
-    public void MakeJmpLess(string jmpLabel)
-    {
-        Instruction instr = new Instruction(InstrType.Jl);
-        instructions.Add(instr);
-        SubscribeToLabel(instr, jmpLabel);
-    }
-
-    public void MakeJmpGreater(string jmpLabel)
-    {
-        Instruction instr = new Instruction(InstrType.Jg);
-        instructions.Add(instr);
-        SubscribeToLabel(instr, jmpLabel);
-    }
-
-    public void MakeJmpNEQ(string jmpLabel)
-    {
-        Instruction instr = new Instruction(InstrType.Jne);
-        instructions.Add(instr);
-        SubscribeToLabel(instr, jmpLabel);
-    }
-*/
     public void MakeLoad(string name)
     {
         if(!variables.ContainsKey(name))
