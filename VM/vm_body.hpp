@@ -24,6 +24,8 @@ typedef union Value
 	bool boolVal;
 } Value;
 
+//TODO: make this return the actual Value.
+
 inline Value* PopStack(Stack& opStack)
 {
     Value* val = &(((Value*)opStack.values)[opStack.pointer]);

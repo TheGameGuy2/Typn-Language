@@ -8,7 +8,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 
-string path = "";
+string path;
 string outputName = "out.tpc";
 bool debugMode = false;
 
