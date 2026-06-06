@@ -4,9 +4,7 @@ using Errors;
 using IR;
 using Lexing;
 using Parsing;
-using Runner;
 using System.Diagnostics;
-using System.IO;
 using System.Runtime.InteropServices;
 
 
@@ -111,8 +109,8 @@ if(RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
 {
     vmPath = "./Runtime/vm";
 }
-       // or "./MyVM" on Linux
-string programPath = outputName;  // your bytecode file
+
+string programPath = outputName; 
 
 var process = new Process();
 process.StartInfo.FileName = vmPath;
@@ -122,7 +120,3 @@ process.StartInfo.UseShellExecute = true;
 process.Start();
 process.WaitForExit();
 
-//Console.WriteLine("--- Executing ---");
-//VM vm = new VM(builder.GetInstructions());
-//vm.Run();
-//Console.WriteLine(p.ParseExpression().MakeInstruction());*/

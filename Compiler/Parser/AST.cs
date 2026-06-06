@@ -6,6 +6,9 @@ using ASTPasses;
 
 namespace Parsing;
 
+//TODO: Generate IR in separate AST pass.
+
+
 //Base class
 public class ASTNode
 {
@@ -261,7 +264,10 @@ public class Name : ASTNode
 
 }
 
-public class VariableNode : ASTNode //Declaration
+/// <summary>
+/// Var declaration.
+/// </summary>
+public class VariableNode : ASTNode 
 {
     public Name name;
     public Token dataTypeToken;
@@ -309,6 +315,9 @@ public class VariableNode : ASTNode //Declaration
 
 }
 
+/// <summary>
+/// Name assignemt
+/// </summary>
 public class AssignNode : ASTNode
 {
     public ASTNode assignExpr;
