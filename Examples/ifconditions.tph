@@ -1,0 +1,45 @@
+###
+
+Typhon's syntax is quite similair to the C syntax most people are used to.
+
+&&,|| are still WIP, might only work with bool.
+
+###
+
+
+int:a = 3
+
+if(a == 3)
+{
+    print(1)
+}
+
+if(a < 2)
+{
+    print(0)
+}
+
+if(a > 2)
+{
+    print(1)
+}
+
+if(a <= 2)
+{
+    print(0)
+}
+
+if(a >= 3)
+{
+    print(1)
+}
+
+if(a <= 3)
+{
+    print(1)
+}
+
+if(a > 3)
+{
+    print(0)
+}

@@ -1,0 +1,27 @@
+###
+This programm calculates fibonacci numbers.
+count is used for the loop, it represents the ammount of numbers to be calculated
+###
+
+
+int:count = 1
+
+//Storing the last 2 numbers, functions WIP, arrays WIP
+int:one = 0
+int:two = 1
+
+int:temp;
+
+while(count < 13) 
+{
+    print(one)
+
+
+    count += 1
+
+    temp = one + two
+
+    one = two
+    two = temp
+    
+}
