@@ -1,0 +1,40 @@
+###
+
+Typn is a statically typed language, 
+which means that the data type of a variable needs to be known at compile time.
+
+Currently supported datatypes:
+
+int - int (int32)
+float - flt (float32)*
+bool - bol (whatever C++ decides it to be)
+
+*The language expects float to be 4 bytes, if it isn't, this thing might break.
+###
+
+//Here is an example definition:
+
+int:my_number = 12
+
+//Variables can be uninitialized, meaning their memory gets reserved for later use.
+
+flt:my_float;
+
+my_float = 23.3
+
+
+### Scopes ###
+
+//Variables are defined in scopes:
+
+int:a = 900
+
+while(a >= 0)
+{
+    a-=1 //a is defined in a higher scope
+    int:b = a + 1
+}
+
+print(b) //Error, b is not defined in this scope.
+
+
