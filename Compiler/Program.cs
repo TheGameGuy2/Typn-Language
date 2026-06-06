@@ -17,13 +17,7 @@ bool debugMode = false;
 
 foreach(string arg in args)
 {
-    if(arg.StartsWith("f:"))
-    {
-        path = arg.Replace("f:","");
-    }
-
     
-
     if(arg == "debug")
     {
         debugMode = true;
@@ -35,11 +29,13 @@ foreach(string arg in args)
     }
 }
 
-Console.WriteLine(path);
+if(!File.Exists(args[0]))
+{
+    Console.WriteLine($"File '{args[0]}' was not found.");
+    throw new Exception("File not found :c");
+}
 
-Tokenizer t = new(File.ReadAllText("main.tph"));
-
-
+Tokenizer t = new(File.ReadAllText(path));
 
 List<Token> tokens = t.MakeTokens();
 
@@ -110,10 +106,10 @@ CodeGenerator generator = new(builder.GetInstructions());
 File.WriteAllBytes(outputName,generator.Generate().ToArray());
 
 
-string vmPath = "vm.exe";   
+string vmPath = "/Runtime/vm.exe";   
 if(RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
 {
-    vmPath = "./vm";
+    vmPath = "./Runtime/vm";
 }
        // or "./MyVM" on Linux
 string programPath = outputName;  // your bytecode file
