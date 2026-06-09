@@ -115,39 +115,4 @@ while(count < 13)
 //print(two)
 
 
-###
-int:cur = 65
-
-while(cur<91)
-{
-    //flt:hey = 23
-    printc(cur)
-    cur = cur + 1
-}
-
-printc(10)
-
-int:two = 4
-
-int:three = 314
-
-
-
-if(true)
-{
-    
-    two = three
-}
-
-
-
-
-if(two == -1)
-{
-    printc(67)
-}
-
-
-print(two)
-
 
