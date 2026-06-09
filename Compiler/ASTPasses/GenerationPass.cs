@@ -4,6 +4,7 @@ using Lexing;
 
 namespace ASTPasses;
 
+//WIP - Generation is done in AST for now.
 
 public class IRGeneratePass : ASTVisitor
 {

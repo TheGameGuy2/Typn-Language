@@ -1,7 +1,5 @@
 using System.Globalization;
-using System.Reflection.Emit;
 using IR;
-using Parsing;
 
 
 namespace CodeGen;
@@ -32,7 +30,7 @@ public class CodeGenerator
         //We generate an instruction type for each data type, that's why we end up with datatypes*instructioncount
         //-1 is done to ignore label instructions.
         byte opcode = 0;
-        for(int i = 0; i<Enum.GetValues(typeof(InstrType)).Length-1; i++)
+        for(int i = 0; i<Enum.GetValues<InstrType>().Length-1; i++)
         {
 
             //Console.WriteLine($"{(InstrType)i} : {opcode}");
@@ -64,7 +62,7 @@ public class CodeGenerator
         byte[] labelBytes = BitConverter.GetBytes(address);
         labelDict.Add(name,labelBytes);
 
-        if(subscriberDict.TryGetValue(name, out List<int> subs))
+        if(subscriberDict.TryGetValue(name, out List<int>? subs))
         {
             //Patch bytecode
             foreach(int sub in subs)
@@ -79,13 +77,13 @@ public class CodeGenerator
 
     public byte[] GetLabel(string name, int curAddress)
     {
-        if(labelDict.TryGetValue(name, out byte[] address))
+        if(labelDict.TryGetValue(name, out byte[]? address))
         {
             return address;
         }
         else
         {
-            if(subscriberDict.TryGetValue(name, out List<int> subs))
+            if(subscriberDict.TryGetValue(name, out List<int>? subs))
             {
                 subs.Add(curAddress);
             }

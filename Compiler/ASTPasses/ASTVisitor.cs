@@ -1,5 +1,3 @@
-using Lexing;
-using IR;
 using Parsing;
 
 namespace ASTPasses;

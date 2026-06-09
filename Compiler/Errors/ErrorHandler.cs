@@ -58,9 +58,17 @@ public static class ErrorHandler
         
         if(critical)
         {
-            Console.WriteLine("[Critical]");
+            Console.Error.WriteLine("[Critical]");
             ThrowAll();
         }
     }
+
+    public static void ThrowCLIError(string message)
+    {
+        Console.WriteLine("[Command Error] " + message);
+        Console.ReadKey();
+        Environment.Exit(-1);
+    }
+    
 
 }

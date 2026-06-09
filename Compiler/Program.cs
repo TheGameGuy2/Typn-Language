@@ -8,29 +8,66 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 
+string helpMessage = 
+"Usage: typn [help | INPUT_PATH] [ARGS]"
++ "\nOptions:"
++ "\n-debug              forces compiler to output Tokens,AST,IR."
++ "\n-o [FILE_PATH]      specifies bytecode output file."
++ "\n-run                executes bytecode after compilation.";
+
 string path;
-string outputName = "out.tpc";
-bool debugMode = false;
+string outputName = "out.tpc"; //Default output name
+bool debugMode = false; //Output more information during compilation
+bool doRun = false; //Start VM after compiling
 
-
-foreach(string arg in args)
+if(args.Length == 0)
 {
-    
-    if(arg == "debug")
+    ErrorHandler.ThrowCLIError("No arguments. Type 'help' for help.");
+}
+
+for(int i = 0; i<args.Length; i++)
+{
+    string arg = args[i];
+
+    if(arg == "help")
+    {
+        Console.WriteLine(helpMessage);
+    }
+    else if(arg == "-help")
+    {
+        Console.WriteLine(helpMessage);
+    }
+    else if(arg == "--help")
+    {
+        Console.WriteLine(helpMessage);
+    }
+    else if(arg == "-debug")
     {
         debugMode = true;
     }
-
-    if(arg.StartsWith("o:"))
+    else if(arg == "-run")
     {
-        outputName = arg.Replace("o:","");
+        doRun = true;
+    }
+    else if(arg == "-o")
+    {
+        if(i+1 < args.Length)
+        {  
+            outputName = args[i+1];
+        }
+        else
+        {
+            
+            ErrorHandler.ThrowCLIError("Malformed argument. Expected file path after '-o'.");
+            
+        }
     }
 }
 
+
 if(!File.Exists(args[0]))
 {
-    Console.WriteLine($"File '{args[0]}' was not found.");
-    throw new Exception("File not found :c");
+    ErrorHandler.ThrowCLIError($"File '{args[0]}' was not found. Type 'help' for help.");
 }
 
 path = args[0];
@@ -103,7 +140,16 @@ if(debugMode)
 }
 
 CodeGenerator generator = new(builder.GetInstructions());
-File.WriteAllBytes(outputName,generator.Generate().ToArray());
+byte[] bytecode = generator.Generate().ToArray();
+
+try
+{
+    File.WriteAllBytes(outputName,bytecode);    
+}
+catch//(IOException e)
+{
+    ErrorHandler.ThrowCLIError($"Failed to write bytecode. Does output path '{outputName}' exist?");
+}
 
 
 string vmPath = "/Runtime/vm.exe";   
@@ -112,13 +158,23 @@ if(RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
     vmPath = "./Runtime/vm";
 }
 
-string programPath = outputName; 
+if(!Path.Exists(vmPath))
+{
+    ErrorHandler.ThrowCLIError($"Runtime path: {vmPath} not found.");
+}
 
-var process = new Process();
-process.StartInfo.FileName = vmPath;
-process.StartInfo.Arguments = $"\"{programPath}\"";
-process.StartInfo.UseShellExecute = true;
+//Starting VM
+if(doRun)
+{
+    string programPath = outputName; 
 
-process.Start();
-process.WaitForExit();
+    Process process = new();
+    process.StartInfo.FileName = vmPath;
+    process.StartInfo.Arguments = $"\"{programPath}\"";
+    process.StartInfo.UseShellExecute = true;
+
+    process.Start();
+    process.WaitForExit();
+}
+
 

@@ -1,5 +1,3 @@
-
-using System.Reflection.PortableExecutable;
 using Errors;
 
 namespace Lexing;
@@ -233,7 +231,6 @@ public class Tokenizer
         {
             //Error
             throw new Exception($"[Lexer] Invalid operator {op}");
-            return new Token();
         }
     }
 

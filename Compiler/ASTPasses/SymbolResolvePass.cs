@@ -1,4 +1,3 @@
-
 using Parsing;
 using IR;
 using Errors;
@@ -72,13 +71,13 @@ public class SymbolResolver : ASTVisitor
 
     public override void Visit(Name node)
     {
-        if(!scopeStack[stackPointer].TryGetSymbol(node.value.value,out Symbol symb))
+        if(!scopeStack[stackPointer].TryGetSymbol(node.value.value,out Symbol? symb))
         {
             //Check upper scopes for definition.
             int lookBackPtr = stackPointer-1;
             while(lookBackPtr>=0)
             {
-                if(scopeStack[lookBackPtr].TryGetSymbol(node.value.value,out Symbol uSymb))
+                if(scopeStack[lookBackPtr].TryGetSymbol(node.value.value,out Symbol? uSymb))
                 { 
                     node.resolvedSymbol = uSymb;
                     node.dataType = uSymb.DataType;
