@@ -48,16 +48,16 @@ def generate_instructionmap_decode(datatypes:list[str], instructions:list[str]):
 
 
 
-
+#TODO handle generic template functions
 def generate_labels(datatypes:list[str], instructions:list[str], method_dict:dict):
     res ="start:\n\t current++;\n"
 
-    res+="goto *instructionLabels[bytecode[current]];"
+    res+="\tgoto *instructionLabels[bytecode[current]];\n\n"
 
     for inst in instructions:
         
         for datatype in datatypes:
-            res+=f"_{inst}_{datatype}:\n"
+            res+=f"\t_{inst}_{datatype}:\n"
 
             #function call
             if inst in method_dict.keys() :
@@ -81,7 +81,7 @@ def generate_labels(datatypes:list[str], instructions:list[str], method_dict:dic
                 res = res[:-1]
                 res+=");\n"
             
-            res+= "goto _end;" if inst == "End" else "goto start;\n\n"
+            res += "\ngoto _end;" if inst == "End" else "goto start;\n\n"
     return res
 
 
@@ -106,9 +106,10 @@ byte cmpFlag = 0;
 
 
 def generate_value_struct(datatypes, ctypes_dict):
-    res = "typedef union Value\n{\n"
+    res = "typedef union Value\n{\n" + "\tValue() = default;\n"
     for dt in datatypes:
         res+="\t" + ctypes_dict[dt] + f" {dt}Val;\n"
+        res+=f'''\tValue({ctypes_dict[dt]} val){{ {dt}Val = val; }}\n\n'''
     res+="} Value;"
     return res
 
@@ -128,9 +129,9 @@ def generate_arithmetic_methods(datatypes):
     for op in operators.keys():
         part_res = ""
         for dt in datatypes:
-            part_res += f"inline void {op}_{dt}(Stack& opStack)"+"\n{\n"
+            part_res += f"\ninline void {op}_{dt}(Stack& opStack)"+"\n{\n"
             part_res += "\tValue newVal;\n"
-            part_res += f"\tnewVal.{dt}Val = PopStack(opStack)->{dt}Val{operators[op]}PopStack(opStack)->{dt}Val; \n"
+            part_res += f"\tnewVal.{dt}Val = PopStack(opStack).{dt}Val{operators[op]}PopStack(opStack).{dt}Val; \n"
             part_res += "\tPushStack(newVal,opStack);\n}\n"
         res += part_res + "\n"
     return res
@@ -150,40 +151,40 @@ def generate_define_methods(datatypes):
 
 
 def generate_set_methods():
-    return '''
-inline void Set_int(uint32_t* current, Stack& opStack, Stack& memStack, std::vector<byte>& bytecode)
+    res = '''
+template<typename T>
+inline void Set(uint32_t* current, Stack& opStack, Stack& memStack, std::vector<byte>& bytecode)
 {
 	*current+=1;
-	Value setAdr = FetchInstruction_int(&(bytecode[*current]),current);
+	Value setAdr = FetchBytecodeValue<T>(&(bytecode[*current]),current);
 	((Value*)memStack.values)[setAdr.intVal] = *PopStack(opStack);
 }
 '''
-
-def generate_instr_fetch(datatypes, ctypes_dict):
-    res = ""
-    for dt in datatypes:
-        res+=f'''inline Value FetchInstruction_{dt}(void* startAdr,uint32_t* current)'''+'''
-{'''+f'''
-    //Expecting current to be at the first byte
-    *current += sizeof({ctypes_dict[dt]})-1;
-
-    Value val;
-    val.{dt}Val = *({ctypes_dict[dt]}*)startAdr;
-    return val;'''+'''
-}'''
     return res
 
-def generate_push(datatypes):
-    res = ""
+def generate_instr_fetch():
+    res = '''
+template<typename T>
+inline Value FetchBytecodeValue(void* startAdr, uint32_t* current)
+{
+	*current += sizeof(T);
+	Value val(*(T*)startAdr);
+	return val;
+}
+''' 
+    return res
 
-    for dt in datatypes:
-        res += f'''inline void Push_{dt}(uint32_t* current, Stack& opStack, std::vector<byte>& bytecode)
-{{
-	*current+=1;
-	PushStack(FetchInstruction_{dt}(&(bytecode[*current]),current),opStack);
-	
-}}
+def generate_push():
+    res ='''
+template<typname T>
+inline void Push(uint32_t* current, Stack& opStack, std::vector<byte>& bytecode)
+{
+	*current += 1;
+	PushStack(FetchBytecodeValue<T>(&(bytecode[*current]),current),opStack);
+}
 '''
+
+  
     return res
 
 def generate_compares(datatypes):
@@ -193,10 +194,11 @@ def generate_compares(datatypes):
 
     for dt in datatypes:
         for cmp in compareTypes.keys():
-            res += f'''inline void {cmp}_{dt}(Stack& opStack)
+            res += f'''
+inline void {cmp}_{dt}(Stack& opStack)
 {{
 	Value val;
-	if(PopStack(opStack)->{dt}Val {compareTypes[cmp]} PopStack(opStack)->{dt}Val)
+	if(PopStack(opStack).{dt}Val {compareTypes[cmp]} PopStack(opStack).{dt}Val)
 	{{
 		val.intVal = 1;
 		PushStack(val,opStack);
@@ -207,18 +209,20 @@ def generate_compares(datatypes):
 		PushStack(val,opStack);
 	}}
 
-}}'''
+}}
+'''
     return res
 
-def generate_load(datatypes):
-    res = ""
-    for dt in datatypes:
-        res += f'''inline void Load_{dt}(uint32_t* current, Stack& opStack, Stack& memStack, std::vector<byte>& bytecode)
-{{
+def generate_load():
+    res = '''
+template<typename T>
+inline void Load(uint32_t* current, Stack& opStack, Stack& memStack, std::vector<byte>& bytecode)
+{
 	*current+=1;
-	Value getAdr = FetchInstruction_int(&(bytecode[*current]),current);
+	Value getAdr = FetchBytecodeValue<T>(&(bytecode[*current]),current);
 	PushStack(((Value*)memStack.values)[getAdr.intVal], opStack);
-}}'''
+}
+'''
     return res
 
 instructions = ["End",
@@ -297,7 +301,7 @@ def gen_all():
 
     vm = ''.join([file_header,
     generate_value_struct(datatypes,ctypes_dict),
-    generate_instr_fetch(datatypes, ctypes_dict),
+    generate_instr_fetch(),
     generate_arithmetic_methods(["int","float"]),
     generate_compares(datatypes),
     generate_define_methods(datatypes),
@@ -317,4 +321,7 @@ def gen_all():
 
 
 if __name__ == "__main__":
-    print(generate_instructionmap_decode(datatypes, instructions))
+    vm = generate_value_struct(datatypes,ctypes_dict)
+    file = open("test.hpp","w")
+    file.write(vm)
+    file.close()

@@ -18,17 +18,25 @@ typedef struct Stack
 
 typedef union Value
 {
+	Value() = default;
 	int32_t intVal;
-	uint32_t uintVal;
+	Value(int32_t val){ intVal = val; }
+
 	float floatVal;
+	Value(float val){ floatVal = val; }
+
 	bool boolVal;
+	Value(bool val){ boolVal = val; }
+
+	uint32_t uintVal;
+	Value(uint32_t val) { uintVal = val; }
+
 } Value;
 
-//TODO: make this return the actual Value.
 
-inline Value* PopStack(Stack& opStack)
+inline Value PopStack(Stack& opStack)
 {
-    Value* val = &(((Value*)opStack.values)[opStack.pointer]);
+    Value val = ((Value*)opStack.values)[opStack.pointer];
     opStack.pointer--;
 
     return val;
@@ -40,99 +48,80 @@ inline void PushStack(Value val, Stack& opStack)
     ((Value*)opStack.values)[opStack.pointer] = val;
 }
 
-inline Value FetchInstruction_int(void* startAdr,uint32_t* current)
-{
-    //Expecting current to be at the first byte
-    *current += sizeof(int32_t)-1;
-	
-	#ifdef DEBUG
-	print("Fetch: current: ") print(*current) NL
-	#endif
-	
-    Value val;
-    val.intVal = *(int32_t*)startAdr;
-	
-	#ifdef DEBUG
-	print("Dec. Value: ") print(val.intVal) NL
-	winput
-	#endif
 
-    return val;
+
+template<typename T>
+inline Value FetchBytecodeValue(void* startAdr, uint32_t* current)
+{
+	*current += sizeof(T)-1; //-1 because current gets increased at start of exe loop.
+	Value val = (Value)(*(T*)startAdr);
+	return val;
 }
 
-inline Value FetchInstruction_float(void* startAdr,uint32_t* current)
-{
-    //Expecting current to be at the first byte
-    *current += sizeof(float)-1;
-
-    Value val;
-    val.floatVal = *(float*)startAdr;
-    return val;
-}inline Value FetchInstruction_bool(void* startAdr,uint32_t* current)
-{
-    //Expecting current to be at the first byte
-    *current += sizeof(bool)-1;
-
-    Value val;
-    val.boolVal = *(bool*)startAdr;
-    return val;
-}
 inline void Add_int(Stack& opStack)
 {
-        Value newVal;
-        newVal.intVal = PopStack(opStack)->intVal+PopStack(opStack)->intVal; 
-        PushStack(newVal,opStack);
+	Value newVal;
+	newVal.intVal = PopStack(opStack).intVal+PopStack(opStack).intVal; 
+	PushStack(newVal,opStack);
 }
+
 inline void Add_float(Stack& opStack)
 {
-        Value newVal;
-        newVal.floatVal = PopStack(opStack)->floatVal+PopStack(opStack)->floatVal; 
-        PushStack(newVal,opStack);
+	Value newVal;
+	newVal.floatVal = PopStack(opStack).floatVal+PopStack(opStack).floatVal; 
+	PushStack(newVal,opStack);
 }
+
 
 inline void Sub_int(Stack& opStack)
 {
-        Value newVal;
-        newVal.intVal = PopStack(opStack)->intVal-PopStack(opStack)->intVal; 
-        PushStack(newVal,opStack);
+	Value newVal;
+	newVal.intVal = PopStack(opStack).intVal-PopStack(opStack).intVal; 
+	PushStack(newVal,opStack);
 }
+
 inline void Sub_float(Stack& opStack)
 {
-        Value newVal;
-        newVal.floatVal = PopStack(opStack)->floatVal-PopStack(opStack)->floatVal; 
-        PushStack(newVal,opStack);
+	Value newVal;
+	newVal.floatVal = PopStack(opStack).floatVal-PopStack(opStack).floatVal; 
+	PushStack(newVal,opStack);
 }
+
 
 inline void Mul_int(Stack& opStack)
 {
-        Value newVal;
-        newVal.intVal = PopStack(opStack)->intVal*PopStack(opStack)->intVal; 
-        PushStack(newVal,opStack);
+	Value newVal;
+	newVal.intVal = PopStack(opStack).intVal*PopStack(opStack).intVal; 
+	PushStack(newVal,opStack);
 }
+
 inline void Mul_float(Stack& opStack)
 {
-        Value newVal;
-        newVal.floatVal = PopStack(opStack)->floatVal*PopStack(opStack)->floatVal; 
-        PushStack(newVal,opStack);
+	Value newVal;
+	newVal.floatVal = PopStack(opStack).floatVal*PopStack(opStack).floatVal; 
+	PushStack(newVal,opStack);
 }
+
 
 inline void Div_int(Stack& opStack)
 {
-        Value newVal;
-        newVal.intVal = PopStack(opStack)->intVal/PopStack(opStack)->intVal; 
-        PushStack(newVal,opStack);
+	Value newVal;
+	newVal.intVal = PopStack(opStack).intVal/PopStack(opStack).intVal; 
+	PushStack(newVal,opStack);
 }
+
 inline void Div_float(Stack& opStack)
 {
-        Value newVal;
-        newVal.floatVal = PopStack(opStack)->floatVal/PopStack(opStack)->floatVal; 
-        PushStack(newVal,opStack);
+	Value newVal;
+	newVal.floatVal = PopStack(opStack).floatVal/PopStack(opStack).floatVal; 
+	PushStack(newVal,opStack);
 }
+
 
 inline void CmpEq_int(Stack& opStack)
 {
 	Value val;
-	if(PopStack(opStack)->intVal == PopStack(opStack)->intVal)
+	if(PopStack(opStack).intVal == PopStack(opStack).intVal)
 	{
 		val.intVal = 1;
 		PushStack(val,opStack);
@@ -143,10 +132,12 @@ inline void CmpEq_int(Stack& opStack)
 		PushStack(val,opStack);
 	}
 
-}inline void CmpNEq_int(Stack& opStack)
+}
+
+inline void CmpNEq_int(Stack& opStack)
 {
 	Value val;
-	if(PopStack(opStack)->intVal != PopStack(opStack)->intVal)
+	if(PopStack(opStack).intVal != PopStack(opStack).intVal)
 	{
 		val.intVal = 1;
 		PushStack(val,opStack);
@@ -157,10 +148,12 @@ inline void CmpEq_int(Stack& opStack)
 		PushStack(val,opStack);
 	}
 
-}inline void CmpL_int(Stack& opStack)
+}
+
+inline void CmpL_int(Stack& opStack)
 {
 	Value val;
-	if(PopStack(opStack)->intVal < PopStack(opStack)->intVal)
+	if(PopStack(opStack).intVal < PopStack(opStack).intVal)
 	{
 		val.intVal = 1;
 		PushStack(val,opStack);
@@ -171,10 +164,12 @@ inline void CmpEq_int(Stack& opStack)
 		PushStack(val,opStack);
 	}
 
-}inline void CmpG_int(Stack& opStack)
+}
+
+inline void CmpG_int(Stack& opStack)
 {
 	Value val;
-	if(PopStack(opStack)->intVal > PopStack(opStack)->intVal)
+	if(PopStack(opStack).intVal > PopStack(opStack).intVal)
 	{
 		val.intVal = 1;
 		PushStack(val,opStack);
@@ -185,10 +180,12 @@ inline void CmpEq_int(Stack& opStack)
 		PushStack(val,opStack);
 	}
 
-}inline void CmpLEq_int(Stack& opStack)
+}
+
+inline void CmpLEq_int(Stack& opStack)
 {
 	Value val;
-	if(PopStack(opStack)->intVal <= PopStack(opStack)->intVal)
+	if(PopStack(opStack).intVal <= PopStack(opStack).intVal)
 	{
 		val.intVal = 1;
 		PushStack(val,opStack);
@@ -199,10 +196,12 @@ inline void CmpEq_int(Stack& opStack)
 		PushStack(val,opStack);
 	}
 
-}inline void CmpGEq_int(Stack& opStack)
+}
+
+inline void CmpGEq_int(Stack& opStack)
 {
 	Value val;
-	if(PopStack(opStack)->intVal >= PopStack(opStack)->intVal)
+	if(PopStack(opStack).intVal >= PopStack(opStack).intVal)
 	{
 		val.intVal = 1;
 		PushStack(val,opStack);
@@ -213,10 +212,12 @@ inline void CmpEq_int(Stack& opStack)
 		PushStack(val,opStack);
 	}
 
-}inline void CmpEq_float(Stack& opStack)
+}
+
+inline void CmpEq_float(Stack& opStack)
 {
 	Value val;
-	if(PopStack(opStack)->floatVal == PopStack(opStack)->floatVal)
+	if(PopStack(opStack).floatVal == PopStack(opStack).floatVal)
 	{
 		val.intVal = 1;
 		PushStack(val,opStack);
@@ -227,10 +228,12 @@ inline void CmpEq_int(Stack& opStack)
 		PushStack(val,opStack);
 	}
 
-}inline void CmpNEq_float(Stack& opStack)
+}
+
+inline void CmpNEq_float(Stack& opStack)
 {
 	Value val;
-	if(PopStack(opStack)->floatVal != PopStack(opStack)->floatVal)
+	if(PopStack(opStack).floatVal != PopStack(opStack).floatVal)
 	{
 		val.intVal = 1;
 		PushStack(val,opStack);
@@ -241,10 +244,12 @@ inline void CmpEq_int(Stack& opStack)
 		PushStack(val,opStack);
 	}
 
-}inline void CmpL_float(Stack& opStack)
+}
+
+inline void CmpL_float(Stack& opStack)
 {
 	Value val;
-	if(PopStack(opStack)->floatVal < PopStack(opStack)->floatVal)
+	if(PopStack(opStack).floatVal < PopStack(opStack).floatVal)
 	{
 		val.intVal = 1;
 		PushStack(val,opStack);
@@ -255,10 +260,12 @@ inline void CmpEq_int(Stack& opStack)
 		PushStack(val,opStack);
 	}
 
-}inline void CmpG_float(Stack& opStack)
+}
+
+inline void CmpG_float(Stack& opStack)
 {
 	Value val;
-	if(PopStack(opStack)->floatVal > PopStack(opStack)->floatVal)
+	if(PopStack(opStack).floatVal > PopStack(opStack).floatVal)
 	{
 		val.intVal = 1;
 		PushStack(val,opStack);
@@ -269,10 +276,12 @@ inline void CmpEq_int(Stack& opStack)
 		PushStack(val,opStack);
 	}
 
-}inline void CmpLEq_float(Stack& opStack)
+}
+
+inline void CmpLEq_float(Stack& opStack)
 {
 	Value val;
-	if(PopStack(opStack)->floatVal <= PopStack(opStack)->floatVal)
+	if(PopStack(opStack).floatVal <= PopStack(opStack).floatVal)
 	{
 		val.intVal = 1;
 		PushStack(val,opStack);
@@ -283,10 +292,12 @@ inline void CmpEq_int(Stack& opStack)
 		PushStack(val,opStack);
 	}
 
-}inline void CmpGEq_float(Stack& opStack)
+}
+
+inline void CmpGEq_float(Stack& opStack)
 {
 	Value val;
-	if(PopStack(opStack)->floatVal >= PopStack(opStack)->floatVal)
+	if(PopStack(opStack).floatVal >= PopStack(opStack).floatVal)
 	{
 		val.intVal = 1;
 		PushStack(val,opStack);
@@ -297,10 +308,12 @@ inline void CmpEq_int(Stack& opStack)
 		PushStack(val,opStack);
 	}
 
-}inline void CmpEq_bool(Stack& opStack)
+}
+
+inline void CmpEq_bool(Stack& opStack)
 {
 	Value val;
-	if(PopStack(opStack)->boolVal == PopStack(opStack)->boolVal)
+	if(PopStack(opStack).boolVal == PopStack(opStack).boolVal)
 	{
 		val.intVal = 1;
 		PushStack(val,opStack);
@@ -311,10 +324,12 @@ inline void CmpEq_int(Stack& opStack)
 		PushStack(val,opStack);
 	}
 
-}inline void CmpNEq_bool(Stack& opStack)
+}
+
+inline void CmpNEq_bool(Stack& opStack)
 {
 	Value val;
-	if(PopStack(opStack)->boolVal != PopStack(opStack)->boolVal)
+	if(PopStack(opStack).boolVal != PopStack(opStack).boolVal)
 	{
 		val.intVal = 1;
 		PushStack(val,opStack);
@@ -325,10 +340,12 @@ inline void CmpEq_int(Stack& opStack)
 		PushStack(val,opStack);
 	}
 
-}inline void CmpL_bool(Stack& opStack)
+}
+
+inline void CmpL_bool(Stack& opStack)
 {
 	Value val;
-	if(PopStack(opStack)->boolVal < PopStack(opStack)->boolVal)
+	if(PopStack(opStack).boolVal < PopStack(opStack).boolVal)
 	{
 		val.intVal = 1;
 		PushStack(val,opStack);
@@ -339,10 +356,12 @@ inline void CmpEq_int(Stack& opStack)
 		PushStack(val,opStack);
 	}
 
-}inline void CmpG_bool(Stack& opStack)
+}
+
+inline void CmpG_bool(Stack& opStack)
 {
 	Value val;
-	if(PopStack(opStack)->boolVal > PopStack(opStack)->boolVal)
+	if(PopStack(opStack).boolVal > PopStack(opStack).boolVal)
 	{
 		val.intVal = 1;
 		PushStack(val,opStack);
@@ -353,10 +372,12 @@ inline void CmpEq_int(Stack& opStack)
 		PushStack(val,opStack);
 	}
 
-}inline void CmpLEq_bool(Stack& opStack)
+}
+
+inline void CmpLEq_bool(Stack& opStack)
 {
 	Value val;
-	if(PopStack(opStack)->boolVal <= PopStack(opStack)->boolVal)
+	if(PopStack(opStack).boolVal <= PopStack(opStack).boolVal)
 	{
 		val.intVal = 1;
 		PushStack(val,opStack);
@@ -367,10 +388,12 @@ inline void CmpEq_int(Stack& opStack)
 		PushStack(val,opStack);
 	}
 
-}inline void CmpGEq_bool(Stack& opStack)
+}
+
+inline void CmpGEq_bool(Stack& opStack)
 {
 	Value val;
-	if(PopStack(opStack)->boolVal >= PopStack(opStack)->boolVal)
+	if(PopStack(opStack).boolVal >= PopStack(opStack).boolVal)
 	{
 		val.intVal = 1;
 		PushStack(val,opStack);
@@ -381,11 +404,11 @@ inline void CmpEq_int(Stack& opStack)
 		PushStack(val,opStack);
 	}
 
-}inline void Define_int(Stack& memStack)
-{
-	memStack.pointer++;
-	((Value*)memStack.values)[memStack.pointer] = Value();
+}
 
+inline void Define_int(Stack& memStack)
+{
+	PushStack(Value(), memStack);
 }
 inline void Define_float(Stack& memStack)
 {
@@ -400,73 +423,56 @@ inline void Define_bool(Stack& memStack)
 
 }
 
-inline void Set_int(uint32_t* current, Stack& opStack, Stack& memStack, std::vector<byte>& bytecode)
+template<typename T>
+inline void Set(uint32_t* current, Stack& opStack, Stack& memStack, std::vector<byte>& bytecode)
 {
 	*current+=1;
-	Value setAdr = FetchInstruction_int(&(bytecode[*current]),current);
-	((Value*)memStack.values)[setAdr.intVal] = *PopStack(opStack);
+	Value setAdr = FetchBytecodeValue<T>(&(bytecode[*current]),current);
+	((Value*)memStack.values)[setAdr.intVal] = PopStack(opStack);
 }
-inline void Load_int(uint32_t* current, Stack& opStack, Stack& memStack, std::vector<byte>& bytecode)
+
+template<typename T>
+inline void Load(uint32_t* current, Stack& opStack, Stack& memStack, std::vector<byte>& bytecode)
 {
 	*current+=1;
-	Value getAdr = FetchInstruction_int(&(bytecode[*current]),current);
-	PushStack(((Value*)memStack.values)[getAdr.intVal], opStack);
-}inline void Load_float(uint32_t* current, Stack& opStack, Stack& memStack, std::vector<byte>& bytecode)
-{
-	*current+=1;
-	Value getAdr = FetchInstruction_int(&(bytecode[*current]),current);
-	PushStack(((Value*)memStack.values)[getAdr.intVal], opStack);
-}inline void Load_bool(uint32_t* current, Stack& opStack, Stack& memStack, std::vector<byte>& bytecode)
-{
-	*current+=1;
-	Value getAdr = FetchInstruction_int(&(bytecode[*current]),current);
+	Value getAdr = FetchBytecodeValue<T>(&(bytecode[*current]),current);
 	PushStack(((Value*)memStack.values)[getAdr.intVal], opStack);
 }
-inline void Push_int(uint32_t* current, Stack& opStack, std::vector<byte>& bytecode)
+
+
+template<typename T>
+inline void Push(uint32_t* current, Stack& opStack, std::vector<byte>& bytecode)
 {
 	*current += 1;
-	//print("Push: current: ") print(*current) NL
-	//winput
-	PushStack(FetchInstruction_int(&(bytecode[*current]),current),opStack);
-	
-}
-inline void Push_float(uint32_t* current, Stack& opStack, std::vector<byte>& bytecode)
-{
-	*current+=1;
-	PushStack(FetchInstruction_float(&(bytecode[*current]),current),opStack);
-	
-}
-inline void Push_bool(uint32_t* current, Stack& opStack, std::vector<byte>& bytecode)
-{
-	*current+=1;
-	PushStack(FetchInstruction_bool(&(bytecode[*current]),current),opStack);
+	PushStack(FetchBytecodeValue<T>(&(bytecode[*current]),current),opStack);
 	
 }
 
+
 inline void Not_bool(Stack& opStack)
 {
-	Value invVal = *PopStack(opStack);
+	Value invVal = PopStack(opStack);
 	invVal.boolVal = !invVal.boolVal;
 	PushStack(invVal,opStack);
 }
 
 inline void And_bool(Stack& opStack)
 {
-	Value invVal = *PopStack(opStack);
-	invVal.boolVal = invVal.boolVal && PopStack(opStack)->boolVal;
+	Value invVal = PopStack(opStack);
+	invVal.boolVal = invVal.boolVal && PopStack(opStack).boolVal;
 	PushStack(invVal,opStack);
 }
 
 inline void Or_bool(Stack& opStack)
 {
-	Value invVal = *PopStack(opStack);
-	invVal.boolVal = invVal.boolVal || PopStack(opStack)->boolVal;
+	Value invVal = PopStack(opStack);
+	invVal.boolVal = invVal.boolVal || PopStack(opStack).boolVal;
 	PushStack(invVal,opStack);
 }
 
-inline void Comp_int(Stack& opStack, byte* cmpFlag)
+inline void Comp(Stack& opStack, byte* cmpFlag)
 {
-	int cmpVal = PopStack(opStack)->intVal;
+	int cmpVal = PopStack(opStack).intVal;
 	if(cmpVal < 0)
 	{
 		*cmpFlag = -1;
@@ -481,18 +487,18 @@ inline void Comp_int(Stack& opStack, byte* cmpFlag)
 	}
 }
 
-inline void Jmp_int(uint32_t* current, std::vector<byte>& bytecode)
+inline void Jmp(uint32_t* current, std::vector<byte>& bytecode)
 {
 	*current += 1;
-	*current = FetchInstruction_int(&bytecode[*current],current).uintVal; 
+	*current = FetchBytecodeValue<int32_t>(&bytecode[*current],current).uintVal; 
 }
 
-inline void JmpTrue_int(uint32_t* current, std::vector<byte>& bytecode,const byte& cmpFlag)
+inline void JmpTrue(uint32_t* current, std::vector<byte>& bytecode,const byte& cmpFlag)
 {
 	if(cmpFlag>0)
 	{
 		*current += 1;
-		*current = FetchInstruction_int(&bytecode[*current],current).uintVal; 
+		*current = FetchBytecodeValue<int32_t>(&bytecode[*current],current).uintVal; 
 	}
 	else
 	{
@@ -501,12 +507,12 @@ inline void JmpTrue_int(uint32_t* current, std::vector<byte>& bytecode,const byt
 	}
 }
 
-inline void JmpFalse_int(uint32_t* current, std::vector<byte>& bytecode,const byte& cmpFlag)
+inline void JmpFalse(uint32_t* current, std::vector<byte>& bytecode,const byte& cmpFlag)
 {
 	if(cmpFlag<=0)
 	{
 		*current += 1;
-		*current = FetchInstruction_int(&bytecode[*current],current).uintVal; 
+		*current = FetchBytecodeValue<int32_t>(&bytecode[*current],current).uintVal; 
 	}
 	else
 	{
@@ -516,7 +522,7 @@ inline void JmpFalse_int(uint32_t* current, std::vector<byte>& bytecode,const by
 
 inline void Call_int(Stack& opStack)
 {
-	Value val = *PopStack(opStack);
+	Value val = PopStack(opStack);
 	print(val.intVal) NL
 }
 
@@ -541,7 +547,7 @@ void RunVM(std::vector<byte>& bytecode)
 
 	byte cmpFlag = 0;
 
-
+#ifdef DEBUG
 	std::string instructionLabelsDc[27*3] = 
  {
 "_End_int","_End_float","_End_bool",
@@ -569,6 +575,7 @@ void RunVM(std::vector<byte>& bytecode)
 "_JmpTrue_int","_JmpTrue_float","_JmpTrue_bool",
 "_JmpFalse_int","_JmpFalse_float","_JmpFalse_bool"
 };
+#endif
 
     void* instructionLabels[27*3] = {
 		&&_End_int,&&_End_float,&&_End_bool,
@@ -713,15 +720,15 @@ Or_bool(operationStack);
 goto start;
 
 _Set_int:
-Set_int(&current,operationStack,memoryStack,bytecode);
+Set<int32_t>(&current,operationStack,memoryStack,bytecode);
 goto start;
 
 _Set_float:
-Set_int(&current,operationStack,memoryStack,bytecode);
+Set<float>(&current,operationStack,memoryStack,bytecode);
 goto start;
 
 _Set_bool:
-Set_int(&current,operationStack,memoryStack,bytecode);
+Set<bool>(&current,operationStack,memoryStack,bytecode);
 goto start;
 
 _Call_int:
@@ -744,7 +751,7 @@ _CallNative_bool:
 goto start;
 
 _Comp_int:
-Comp_int(operationStack, &cmpFlag);
+Comp(operationStack, &cmpFlag);
 goto start;
 
 _Comp_float:
@@ -826,31 +833,31 @@ CmpNEq_bool(operationStack);
 goto start;
 
 _Push_int:
-Push_int(&current,operationStack,bytecode);
+Push<int32_t>(&current,operationStack,bytecode);
 goto start;
 
 _Push_float:
-Push_float(&current,operationStack,bytecode);
+Push<float>(&current,operationStack,bytecode);
 goto start;
 
 _Push_bool:
-Push_bool(&current,operationStack,bytecode);
+Push<bool>(&current,operationStack,bytecode);
 goto start;
 
 _Load_int:
-Load_int(&current,operationStack,memoryStack,bytecode);
+Load<int32_t>(&current,operationStack,memoryStack,bytecode);
 goto start;
 
 _Load_float:
-Load_float(&current,operationStack,memoryStack,bytecode);
+Load<float>(&current,operationStack,memoryStack,bytecode);
 goto start;
 
 _Load_bool:
-Load_bool(&current,operationStack,memoryStack,bytecode);
+Load<bool>(&current,operationStack,memoryStack,bytecode);
 goto start;
 
 _Jmp_int:
-Jmp_int(&current, bytecode);
+Jmp(&current, bytecode);
 goto start;
 
 _Jmp_float:
@@ -860,7 +867,7 @@ _Jmp_bool:
 goto start;
 
 _JmpTrue_int:
-JmpTrue_int(&current,bytecode,cmpFlag);
+JmpTrue(&current,bytecode,cmpFlag);
 goto start;
 
 _JmpTrue_float:
@@ -870,7 +877,7 @@ _JmpTrue_bool:
 goto start;
 
 _JmpFalse_int:
-JmpFalse_int(&current,bytecode,cmpFlag);
+JmpFalse(&current,bytecode,cmpFlag);
 goto start;
 
 _JmpFalse_float:
