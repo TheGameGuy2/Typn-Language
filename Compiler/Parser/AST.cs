@@ -56,6 +56,7 @@ public class ASTNode
     
 }
 
+
 //Binary operations, +, -, * , / ...
 public class BinOp : ASTNode
 {
@@ -356,9 +357,9 @@ public class AssignNode : ASTNode
 public class CallNode : ASTNode
 {
     public List<ASTNode> callExpr = new();
-    public ASTNode caller;
+    public Name caller;
 
-    public CallNode(ASTNode caller)
+    public CallNode(Name caller)
     {
         this.caller = caller;
         this.value.value = "Call";
@@ -451,13 +452,16 @@ public class BlockNode : ASTNode
 public class IfNode : ASTNode
 {
     public ASTNode expr;
+    public ASTNode? elseBlock;
     public ASTNode body;
 
-    public IfNode(ASTNode expression, ASTNode block)
+    public IfNode(ASTNode expression, ASTNode block, ASTNode? elseBlock = null)
     {
         this.value = new Token(TokenType.If, "if:");
         expr = expression;
         body = block;
+        this.elseBlock = elseBlock ?? null;
+        
     }
 
     public override void Show(int depth)
@@ -491,9 +495,10 @@ public class IfNode : ASTNode
     public override void AcceptVisitor(ASTVisitor visitor)
     {
 
-        expr.AcceptVisitor(visitor);
         visitor.Visit(this);
+        expr.AcceptVisitor(visitor);
         body.AcceptVisitor(visitor);
+        elseBlock?.AcceptVisitor(visitor);
     }
 }
 
@@ -501,9 +506,9 @@ public class IfNode : ASTNode
 public class WhileNode : ASTNode
 {
     public ASTNode expr;
-    public ASTNode body;
+    public BlockNode body;
 
-    public WhileNode(ASTNode expression, ASTNode block)
+    public WhileNode(ASTNode expression, BlockNode block)
     {
         this.value = new Token(TokenType.While, "while:");
         expr = expression;
@@ -544,9 +549,67 @@ public class WhileNode : ASTNode
     public override void AcceptVisitor(ASTVisitor visitor)
     {
 
-        expr.AcceptVisitor(visitor);
         visitor.Visit(this);
+        expr.AcceptVisitor(visitor);
         body.AcceptVisitor(visitor);
-        visitor.Exit(this);
     }
+}
+
+
+
+public class BreakNode : ASTNode
+{
+    
+    public BreakNode(Token tok)
+    {
+        value = tok;
+    }
+
+    public override void AcceptVisitor(ASTVisitor visitor)
+    {
+        visitor.Visit(this);
+    }
+
+}
+
+public class ContinueNode : ASTNode
+{
+    
+    public ContinueNode(Token tok)
+    {
+        value = tok;
+    }
+
+    public override void AcceptVisitor(ASTVisitor visitor)
+    {
+        visitor.Visit(this);
+    }
+
+}
+
+public class ReturnNode : ASTNode
+{
+    public ASTNode? retExpr;
+    public ReturnNode(Token tok)
+    {
+        value = tok;
+    }
+
+    public ReturnNode(Token tok, ASTNode expression)
+    {
+        value = tok;
+        retExpr = expression;
+    }
+
+    public override void AcceptVisitor(ASTVisitor visitor)
+    {
+        visitor.Visit(this);
+    }
+
+    public override void Show(int depth)
+    {
+        base.Show(depth);
+        retExpr?.Show(depth+1);
+    }
+
 }

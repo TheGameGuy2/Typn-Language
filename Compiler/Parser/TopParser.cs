@@ -1,4 +1,5 @@
 
+using Errors;
 using Lexing;
 
 namespace Parsing;
@@ -24,42 +25,61 @@ public partial class Parser
         TokenType[] operators = [TokenType.Plus, TokenType.Sub, TokenType.Mul, TokenType.Div];
         ASTNode statement;
 
-        if(Peek().type == TokenType.DataType)
+        switch(Peek().type)
         {
-            statement = MakeVarDef();
-        }
-        else if(Peek().type == TokenType.If)
-        {
-            statement = MakeIf();
-        }
-        else if(Peek().type == TokenType.While)
-        {
-            statement = MakeWhile();
-        }
-        else if(Peek().type == TokenType.Name)
-        {
-            if (Peek(2).type == TokenType.Equal)
-            {
-                statement = MakeAssign();
-            }
-            else if(operators.Contains(Peek(2).type) && Peek(3).type == TokenType.Equal)
-            {
-                statement = MakePrefixAssign();
-            }
-            else
-            {
-                statement = MakeCall();
-            }
-        }
-        else
-        {
-            //Console.WriteLine("Tried to parse empty (\\n) statement");
-            Consume();
-            return ParseStatement();
+            case TokenType.DataType:
+                statement = MakeVarDef();
+            break;
+
+            case TokenType.If:
+                statement = MakeIf();
+            break;
+
+            case TokenType.While:
+                statement = MakeWhile();
+            break;
+
+            case TokenType.Break:
+                statement = new BreakNode(Consume());
+            break;
+
+            case TokenType.Continue:
+                statement = new ContinueNode(Consume());
+            break;
+
+            case TokenType.Return:
+                statement = (Peek(2).type == TokenType.NewLine) ? new ReturnNode(Consume()) : new ReturnNode(Consume(), ParseExpression());
+            break;
+
+            case TokenType.Name:
+                if (Peek(2).type == TokenType.Equal)
+                {
+                    statement = MakeAssign();
+                }
+                else if(operators.Contains(Peek(2).type) && Peek(3).type == TokenType.Equal)
+                {
+                    statement = MakePrefixAssign();
+                }
+                else
+                {
+                    statement = MakeCall();
+                }
+            break;
+
+            case TokenType.NewLine:
+                Consume();
+                return ParseStatement();
+
+            default:
+                ErrorHandler.AddError(ErrorType.SyntaxError,Peek().line,"Invalid statement.",true);
+                return new ASTNode();//This will never happen
+            break;
+
         }
 
+
         Consume();
-        Expect(TokenType.NewLine);
+        Expect(TokenType.NewLine); 
 
         return statement;
     }
@@ -101,7 +121,7 @@ public partial class Parser
             Consume();
         }
 
-        ASTNode block = MakeBlock();
+        BlockNode block = (BlockNode)MakeBlock();
 
         return new WhileNode(expr, block);
 
@@ -210,7 +230,7 @@ public partial class Parser
         Name nameNode = new Name(name);
 
         Consume();
-        Expect(TokenType.OpenBrace);
+        Expect(TokenType.OpenBrace,"function call");
 
         if(Peek().type == TokenType.ClosedBrace)
         {

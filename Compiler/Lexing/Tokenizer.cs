@@ -47,6 +47,7 @@ public class Tokenizer
         keywordMap["bol"] = new Token(TokenType.DataType, TokenDataType.Bool);
         keywordMap["str"] = new Token(TokenType.DataType, TokenDataType.String);
 
+
         keywordMap["=="] = new Token(TokenType.CompEqual,"==");
         keywordMap["!="] = new Token(TokenType.NotEqual, "!=");
         keywordMap["<="] = new Token(TokenType.LessEqual,"<=");
@@ -59,6 +60,10 @@ public class Tokenizer
 
         keywordMap["if"] = new Token(TokenType.If, "if");
         keywordMap["while"] = new Token(TokenType.While, "while");
+
+        keywordMap["break"] = new Token(TokenType.Break, "break");
+        keywordMap["continue"] = new Token(TokenType.Continue, "continue");
+        keywordMap["ret"] = new Token(TokenType.Return, "return");
     }
 
     private bool IsNameLetter(char c)

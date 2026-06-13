@@ -98,13 +98,20 @@ if(debugMode)
     }
 }
 
+SemanticAnalizer general = new();
 SymbolResolver symbResolver = new();
 TypeResolver typeResolver = new();
 
+
 foreach(ASTNode node in nodes)
 {
+    node.AcceptVisitor(general);
     node.AcceptVisitor(symbResolver);
-   node.AcceptVisitor(typeResolver);
+}
+
+foreach(ASTNode node in nodes)
+{
+    node.AcceptVisitor(typeResolver);
 }
 
 if(debugMode)

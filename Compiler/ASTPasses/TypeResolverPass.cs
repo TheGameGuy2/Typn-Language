@@ -65,8 +65,8 @@ public class TypeResolver : ASTVisitor
             ErrorHandler.AddError(ErrorType.TypeError, node.GetLine(), $"Can not apply '{node.value.value}' on {node.left.dataType} and {node.right.dataType}");
         }
         
-
-        node.dataType = node.left.dataType;
+        
+        node.dataType = compareTypes.Contains(node.value.type) ? IRDataType.Bool : node.left.dataType;
     }
 
     public override void Visit(Name node)
@@ -98,7 +98,7 @@ public class TypeResolver : ASTVisitor
 
     public override void Visit(VariableNode node)
     {
-        Symbol? varSymbol = node.name.resolvedSymbol; //switch this to Name node
+        Symbol? varSymbol = node.name.resolvedSymbol; 
         if(varSymbol!=null)
         {
             node.dataType = node.name.resolvedSymbol.DataType;

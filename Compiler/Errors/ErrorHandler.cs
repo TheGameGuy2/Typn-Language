@@ -8,7 +8,8 @@ public enum ErrorType
 {
     SyntaxError,
     TypeError,
-    NameError
+    NameError,
+    Warning
 }
 
 
@@ -65,7 +66,7 @@ public static class ErrorHandler
 
     public static void ThrowCLIError(string message)
     {
-        Console.WriteLine("[Command Error] " + message);
+        Console.Error.WriteLine("[Command Error] " + message);
         Console.ReadKey();
         Environment.Exit(-1);
     }

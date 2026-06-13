@@ -124,14 +124,32 @@ public partial class Parser
 
     }
 
+    private ASTNode MakeSuperLogical()
+    {
+        ASTNode left = MakeLogical();
+
+        TokenType[] compareOps = [TokenType.And,TokenType.Or];
+
+        TokenType next = Peek().type;
+
+        while(compareOps.Contains(next))
+        {
+            Token op = Consume();
+            left = new BinOp(left, new Operator(op), MakeLogical());
+
+            next = Peek().type;
+        }
+
+        return left;
+    }
+
     private ASTNode MakeLogical()
     {
         ASTNode left = MakeAdditive();
 
         
         HashSet<TokenType> compareOps = 
-                                 [TokenType.And,
-                                    TokenType.Or,
+                                 [
                                     TokenType.Greater,
                                     TokenType.Lesser,
                                     TokenType.CompEqual,
@@ -155,7 +173,7 @@ public partial class Parser
 
     public ASTNode ParseExpression()
     {
-        return MakeLogical();
+        return MakeSuperLogical();
     }
 
 
