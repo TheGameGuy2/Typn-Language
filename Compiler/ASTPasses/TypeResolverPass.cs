@@ -74,7 +74,7 @@ public class TypeResolver : ASTVisitor
 
         if(node.resolvedSymbol!=null)
         {
-            node.dataType = node.resolvedSymbol.DataType;
+            node.dataType = node.resolvedSymbol.dataType;
         }
         else
         {
@@ -101,7 +101,7 @@ public class TypeResolver : ASTVisitor
         Symbol? varSymbol = node.name.resolvedSymbol; 
         if(varSymbol!=null)
         {
-            node.dataType = node.name.resolvedSymbol.DataType;
+            node.dataType = node.name.resolvedSymbol.dataType;
         }
         //else: Symbol not found, error in Symbol resolver.
 

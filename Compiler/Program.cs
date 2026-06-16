@@ -8,7 +8,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 
-string helpMessage = 
+string helpMessage =
 "Usage: typn [help | INPUT_PATH] [ARGS]"
 + "\nOptions:"
 + "\n-debug              forces compiler to output Tokens,AST,IR."
@@ -20,52 +20,52 @@ string outputName = "out.tpc"; //Default output name
 bool debugMode = false; //Output more information during compilation
 bool doRun = false; //Start VM after compiling
 
-if(args.Length == 0)
+if (args.Length == 0)
 {
     ErrorHandler.ThrowCLIError("No arguments. Type 'help' for help.");
 }
 
-for(int i = 0; i<args.Length; i++)
+for (int i = 0; i < args.Length; i++)
 {
     string arg = args[i];
 
-    if(arg == "help")
+    if (arg == "help")
     {
         Console.WriteLine(helpMessage);
     }
-    else if(arg == "-help")
+    else if (arg == "-help")
     {
         Console.WriteLine(helpMessage);
     }
-    else if(arg == "--help")
+    else if (arg == "--help")
     {
         Console.WriteLine(helpMessage);
     }
-    else if(arg == "-debug")
+    else if (arg == "-debug")
     {
         debugMode = true;
     }
-    else if(arg == "-run")
+    else if (arg == "-run")
     {
         doRun = true;
     }
-    else if(arg == "-o")
+    else if (arg == "-o")
     {
-        if(i+1 < args.Length)
-        {  
-            outputName = args[i+1];
+        if (i + 1 < args.Length)
+        {
+            outputName = args[i + 1];
         }
         else
         {
-            
+
             ErrorHandler.ThrowCLIError("Malformed argument. Expected file path after '-o'.");
-            
+
         }
     }
 }
 
 
-if(!File.Exists(args[0]))
+if (!File.Exists(args[0]))
 {
     ErrorHandler.ThrowCLIError($"File '{args[0]}' was not found. Type 'help' for help.");
 }
@@ -77,9 +77,9 @@ Tokenizer t = new(File.ReadAllText(path));
 List<Token> tokens = t.MakeTokens();
 
 
-if(debugMode)
+if (debugMode)
 {
-    foreach(Token tok in tokens)
+    foreach (Token tok in tokens)
     {
         Console.WriteLine(tok);
     }
@@ -87,12 +87,12 @@ if(debugMode)
 
 Parser p = new(tokens);
 List<ASTNode> nodes = p.ParseModule();
-
-if(debugMode)
+// 2 <=
+if (debugMode)
 {
     Console.WriteLine("--- AST ---");
 
-    foreach(ASTNode node in nodes)
+    foreach (ASTNode node in nodes)
     {
         node.Show(0);
     }
@@ -103,24 +103,24 @@ SymbolResolver symbResolver = new();
 TypeResolver typeResolver = new();
 
 
-foreach(ASTNode node in nodes)
+foreach (ASTNode node in nodes)
 {
     node.AcceptVisitor(general);
     node.AcceptVisitor(symbResolver);
 }
 
-foreach(ASTNode node in nodes)
+foreach (ASTNode node in nodes)
 {
     node.AcceptVisitor(typeResolver);
 }
 
-if(debugMode)
+if (debugMode)
 {
     symbResolver.DisplayScopes();
 }
 
 
-if(ErrorHandler.HasErrors())
+if (ErrorHandler.HasErrors())
 {
     ErrorHandler.ThrowAll();
 }
@@ -128,21 +128,21 @@ if(ErrorHandler.HasErrors())
 
 
 IRBuilder builder = new();
-    
-foreach(ASTNode node in nodes)
+
+foreach (ASTNode node in nodes)
 {
     node.MakeInstruction(builder);
 }
 
-if(debugMode)
+if (debugMode)
 {
     Console.WriteLine("--- Stage 1 IR ---");
-    
+
     builder.ShowInstructions();
 }
 
-if(debugMode)
-{   
+if (debugMode)
+{
     Console.WriteLine("--- Code Gen ---");
 }
 
@@ -151,7 +151,7 @@ byte[] bytecode = generator.Generate().ToArray();
 
 try
 {
-    File.WriteAllBytes(outputName,bytecode);    
+    File.WriteAllBytes(outputName, bytecode);
 }
 catch//(IOException e)
 {
@@ -159,21 +159,21 @@ catch//(IOException e)
 }
 
 
-string vmPath = "/Runtime/vm.exe";   
-if(RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+string vmPath = "/Runtime/vm.exe";
+if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
 {
     vmPath = "./Runtime/vm";
 }
 
-if(!Path.Exists(vmPath))
+if (!Path.Exists(vmPath))
 {
     ErrorHandler.ThrowCLIError($"Runtime path: {vmPath} not found.");
 }
 
 //Starting VM
-if(doRun)
+if (doRun)
 {
-    string programPath = outputName; 
+    string programPath = outputName;
 
     Process process = new();
     process.StartInfo.FileName = vmPath;
@@ -183,5 +183,3 @@ if(doRun)
     process.Start();
     process.WaitForExit();
 }
-
-

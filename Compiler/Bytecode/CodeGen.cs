@@ -41,7 +41,7 @@ public class CodeGenerator
                 opcode++;
                 
             }
-
+            
             //Console.WriteLine($"{(InstrType)i} : {opcode}");
             //opcode++;
             

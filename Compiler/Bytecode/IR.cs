@@ -237,33 +237,9 @@ public class IRBuilder
 
     public void ClearLabel(string name)
     {
-        //List<Instruction> subs = labelSubscribers[name];
-        //
-        //foreach(Instruction inst in subs)
-        //{
-        //    inst.AddValue(new IRValue(labelDict[name].ToString(),IRValueType.Const));
-        //}
-        //labelSubscribers[name].Clear();
-        //labelDict.Remove(name);
+        
     }
 
-    //Assigns the later created labels to all subscribers
-    //public void FinishLabels()
-    //{
-    //    //Don't ask me what this does I have no Idea. Just call it after you're done with labels.
-    //    foreach(KeyValuePair<string,List<Instruction>> subs in labelSubscribers)
-    //    {
-    //        if (!labelDict.ContainsKey(subs.Key)) { throw new Exception($"[IR Gen] Label {subs.Key} not found at label clean."); }
-    //        
-    //        foreach(Instruction inst in subs.Value)
-    //        {
-    //            inst.AddValue(new IRValue(labelDict[subs.Key].ToString(),IRValueType.Const));
-    //        }
-    //    }
-    //    //labelDict.Clear();
-    //    //labelSubscribers.Clear();
-    //    
-    //}
 
 
     public void MakeNot()

@@ -20,6 +20,11 @@ public partial class Parser
 
     }
 
+    /// <summary>
+    /// Parses a statement
+    /// </summary>
+    /// <param name="allowClosingBracket">Allows '}' instead of '\n' at statement end</param>
+    /// <returns></returns>
     private ASTNode ParseStatement()
     {
         TokenType[] operators = [TokenType.Plus, TokenType.Sub, TokenType.Mul, TokenType.Div];
@@ -77,9 +82,10 @@ public partial class Parser
 
         }
 
-
+        
+        
         Consume();
-        Expect(TokenType.NewLine); 
+        Expect(TokenType.NewLine, "'\\n'"); 
 
         return statement;
     }
@@ -165,11 +171,14 @@ public partial class Parser
             Consume();
             goto _End;
         }
+        
 
         while(Peek().type != TokenType.ClosedCurBrace)
         {
             node.AddStatement(ParseStatement());
         }
+
+        
 
         _End: //I'm lazy, people.
 

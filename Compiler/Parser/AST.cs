@@ -406,7 +406,7 @@ public class CallNode : ASTNode
 
 public class BlockNode : ASTNode
 {
-    List<ASTNode> statements = new();
+    public List<ASTNode> statements {get; private set;} = new();
 
     public BlockNode()
     {

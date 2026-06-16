@@ -5,15 +5,19 @@ using Lexing;
 namespace ASTPasses;
 
 //WIP - Generation is done in AST for now.
-
+// TODO: Do this, remember to track context and put var defs before loops
 public class IRGeneratePass : ASTVisitor
 {
     
     private readonly IRBuilder builder;
+    private Context currentCtx;
+
 
 
     public IRGeneratePass(IRBuilder builder)
     {
+        this.currentCtx.type = ContextType.TopLevel;
+        this.currentCtx.escapeLabel = "_P_END";
         this.builder = builder;
     }
 
@@ -40,12 +44,16 @@ public class IRGeneratePass : ASTVisitor
 
     public override void Visit(AssignNode node)
     {
-        switch(node.name.resolvedSymbol.DataType)
+        if(currentCtx.type == ContextType.While)
         {
-            case IRDataType.Int:
             
-            break;
         }
+        builder.MakeDefine(node.name.resolvedSymbol.id, node.name.resolvedSymbol.dataType);
+    }
+
+    public override void Visit(WhileNode node)
+    {
+        
     }
 
 
