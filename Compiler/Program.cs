@@ -20,6 +20,7 @@ string outputName = "out.tpc"; //Default output name
 bool debugMode = false; //Output more information during compilation
 bool doRun = false; //Start VM after compiling
 
+
 if (args.Length == 0)
 {
     ErrorHandler.ThrowCLIError("No arguments. Type 'help' for help.");
@@ -129,10 +130,16 @@ if (ErrorHandler.HasErrors())
 
 IRBuilder builder = new();
 
+IRGeneratePass irGen = new(builder);
+
+
 foreach (ASTNode node in nodes)
 {
-    node.MakeInstruction(builder);
+    node.AcceptVisitor(irGen);
+    //node.MakeInstruction(builder);
 }
+
+builder.EndFunction();
 
 if (debugMode)
 {
@@ -148,6 +155,11 @@ if (debugMode)
 
 CodeGenerator generator = new(builder.GetInstructions());
 byte[] bytecode = generator.Generate().ToArray();
+
+if (debugMode)
+{
+    Console.WriteLine("--- Done ---");
+}
 
 try
 {

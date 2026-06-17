@@ -49,9 +49,11 @@ public class Scope
         return s;
     }
 
-    public void AddSymbol(string name, IRDataType dataType = IRDataType.None)
+    public Symbol AddSymbol(string name, IRDataType dataType = IRDataType.None)
     {
-        symbols.Add(name, new Symbol(name,name + scopeID, dataType, this));
+        Symbol sym = new(name,name + scopeID, dataType, this);
+        symbols.Add(name, sym);
+        return sym;
     }
 
     public void Show(int depth = 0)

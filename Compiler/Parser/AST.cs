@@ -297,14 +297,14 @@ public class VariableNode : ASTNode
     {
         if(varValueExpr.value.type == TokenType.Null)
         {
-            builder.MakeDefine(name.value.value, IRBuilder.GetDTFromToken(dataTypeToken));
+            builder.MakeDefine(name.resolvedSymbol.id, IRBuilder.GetDTFromToken(dataTypeToken));
             return;
         }
 
         varValueExpr.MakeInstruction(builder);
 
-        builder.MakeDefine(name.value.value, IRBuilder.GetDTFromToken(dataTypeToken));
-        builder.MakeSet(name.value.value);
+        builder.MakeDefine(name.resolvedSymbol.id, IRBuilder.GetDTFromToken(dataTypeToken));
+        builder.MakeSet(name.resolvedSymbol.id);
     }
 
     public override void AcceptVisitor(ASTVisitor visitor)
@@ -329,8 +329,6 @@ public class AssignNode : ASTNode
         value = new Token(TokenType.Name, $"Assign {name.value.value}");
         assignExpr = expr;
 
-        
-
         this.name = name;
     }
 
@@ -343,12 +341,12 @@ public class AssignNode : ASTNode
     public override void MakeInstruction(IRBuilder builder)
     {
         assignExpr.MakeInstruction(builder);
-        builder.MakeSet(name.value.value);
+        builder.MakeSet(name.resolvedSymbol.id);
     }
 
     public override void AcceptVisitor(ASTVisitor visitor)
     {
-        name.AcceptVisitor(visitor);
+        //because name gets written to, we only visit name in SymbolResolver
         assignExpr.AcceptVisitor(visitor);
         visitor.Visit(this);
     }
@@ -399,6 +397,10 @@ public class CallNode : ASTNode
 
     public override void AcceptVisitor(ASTVisitor visitor)
     {
+        foreach(ASTNode node in callExpr)
+        {
+            node.AcceptVisitor(visitor);
+        }
         visitor.Visit(this);
         //caller.AcceptVisitor(visitor);
     }
@@ -448,6 +450,8 @@ public class BlockNode : ASTNode
 
     }
 }
+
+
 
 public class IfNode : ASTNode
 {
@@ -548,7 +552,6 @@ public class WhileNode : ASTNode
 
     public override void AcceptVisitor(ASTVisitor visitor)
     {
-
         visitor.Visit(this);
         expr.AcceptVisitor(visitor);
         body.AcceptVisitor(visitor);

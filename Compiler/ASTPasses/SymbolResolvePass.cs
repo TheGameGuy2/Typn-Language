@@ -55,8 +55,14 @@ public class SymbolResolver : ASTVisitor
             return;
         }
 
-        current.AddSymbol(name, dataType);
+        node.name.resolvedSymbol = current.AddSymbol(name, dataType);
+        
 
+    }
+
+    public override void Visit(AssignNode node)
+    {
+        node.name.AcceptVisitor(this);
     }
 
     public override void Visit(Name node)

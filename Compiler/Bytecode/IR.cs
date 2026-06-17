@@ -118,11 +118,11 @@ public class IRBuilder
     //variables stores all defined variables and their types for typechecking
     private Dictionary<string, IRDataType> variables = new();
 
-    private Dictionary<string, int> labelDict = new();
-    private Dictionary<string, List<Instruction>> labelSubscribers = new();
+    //We need to store stack push instructions before operations so we don't re define variables in e.g. a loop.
+    private List<Instruction> functionDefines = new();
+    private List<Instruction> functionInstructions = new();
 
     private int labelCounter = -1;
-
 
     public void ShowInstructions()
     {
@@ -132,7 +132,27 @@ public class IRBuilder
         }
     }
 
+    
+    public void StartFunction()
+    {
+        functionDefines.Clear();
+        functionInstructions.Clear();
+    }
 
+
+    //Writing the separated code into the main list. 
+    public void EndFunction()
+    {
+        foreach(Instruction i in functionDefines)
+        {
+            instructions.Add(i);
+        }
+        
+        foreach(Instruction i in functionInstructions)
+        {
+            instructions.Add(i);
+        }
+    }
 
     //TODO: Remove label logic from First IR pass, patch labels after optim. later.
     //TODO: Do that! patch labels in Code Gen.
@@ -197,7 +217,7 @@ public class IRBuilder
 
     public IRDataType GetLastDT()
     {
-        return instructions[^1].instrDataType;
+        return functionInstructions[^1].instrDataType;
     }
 
     
@@ -212,28 +232,9 @@ public class IRBuilder
         //labelDict[name] = instructions.Count-1;
         Instruction label = new(InstrType.Label, IRDataType.None);
         label.AddValue(new(name,IRValueType.Const));
-        instructions.Add(label);
+        functionInstructions.Add(label);
     }
 
-    private void SubscribeToLabel(Instruction subscriber, string labelName)
-    {
-        //if(labelDict.ContainsKey(labelName))
-        //{
-        //    subscriber.AddValue(new IRValue(labelDict[labelName].ToString(), IRValueType.Const));
-        //}
-        //else
-        //{
-        //    labelSubscribers.TryGetValue(labelName, out List<Instruction>? waitingSubs);
-        //    if(waitingSubs != null)
-        //    {
-        //        labelSubscribers[labelName].Add(subscriber);
-        //    }
-        //    else
-        //    {
-        //        labelSubscribers[labelName] = [subscriber];
-        //    }
-        //}
-    }
 
     public void ClearLabel(string name)
     {
@@ -241,52 +242,50 @@ public class IRBuilder
     }
 
 
-
     public void MakeNot()
     {
         Instruction instr = new Instruction(InstrType.Not,IRDataType.Bool);
-        instructions.Add(instr);
+        functionInstructions.Add(instr);
     }
 
     public void MakeAnd()
     {
         Instruction instr = new Instruction(InstrType.And,IRDataType.Bool);
-        instructions.Add(instr);
+        functionInstructions.Add(instr);
     }
     
     public void MakeOr()
     {
         Instruction instr = new Instruction(InstrType.Or,IRDataType.Bool);
-        instructions.Add(instr);
+        functionInstructions.Add(instr);
     }
 
     public void MakeJump(string jmpLabel)
     {
         Instruction instr = new Instruction(InstrType.Jmp);
         instr.AddValue(new(jmpLabel,IRValueType.Const));
-        instructions.Add(instr);
-        
+        functionInstructions.Add(instr);
     }
 
     //Compares the top value of the stack with 0, sets comp flag to result.
     public void MakeCmp()
     {
         Instruction instr = new(InstrType.Comp);
-        instructions.Add(instr);
+        functionInstructions.Add(instr);
     }
 
     public void MakeJmpTrue(string jmpLabel)
     {
         Instruction instr = new Instruction(InstrType.JmpTrue);
         instr.AddValue(new(jmpLabel,IRValueType.Const));
-        instructions.Add(instr);
+        functionInstructions.Add(instr);
     }
 
     public void MakeJmpFalse(string jmpLabel)
     {
         Instruction instr = new Instruction(InstrType.JmpFalse);
         instr.AddValue(new(jmpLabel,IRValueType.Const));
-        instructions.Add(instr);
+        functionInstructions.Add(instr);
     }
 
     
@@ -301,7 +300,7 @@ public class IRBuilder
 
         instr.AddValue(new IRValue(name, IRValueType.Var));
 
-        instructions.Add(instr);
+        functionInstructions.Add(instr);
     }
 
     public void MakeConstant(string value, IRDataType dataType)
@@ -309,29 +308,29 @@ public class IRBuilder
         Instruction instr = new(InstrType.Push, dataType);
         instr.AddValue(new IRValue(value, IRValueType.Const));
 
-        instructions.Add(instr);
+        functionInstructions.Add(instr);
     }
 
-    public void MakeDefine(string name, IRDataType dataType)
+    public void MakeDefine(string symbolID, IRDataType dataType)
     {
-        if(variables.ContainsKey(name))
+        if(variables.ContainsKey(symbolID))
         {
-            throw new Exception($"[IR Gen] Redefining variable {name}. Redefining is not allowed. Context based resolution is WIP.");
+            throw new Exception($"[IR Gen] Redefining variable {symbolID}. Redefining is not allowed. Context based resolution is WIP.");
         }
 
-        variables[name] = dataType;
+        variables[symbolID] = dataType;
 
         Instruction instr = new(InstrType.Define, dataType);
-        instr.AddValue(new IRValue(name, IRValueType.Var));
+        instr.AddValue(new IRValue(symbolID, IRValueType.Var));
 
-        instructions.Add(instr);
+        functionDefines.Add(instr);
     }
 
     public void MakeOperator(InstrType op)
     {
-        Instruction instr = new(op, instructions[^1].instrDataType);
+        Instruction instr = new(op, functionInstructions[^1].instrDataType);
 
-        instructions.Add(instr);
+        functionInstructions.Add(instr);
     }
 
     public void MakeCall(string name)
@@ -341,7 +340,7 @@ public class IRBuilder
         Instruction instr = new(InstrType.Call);
         instr.AddValue(new IRValue(name,IRValueType.Var));
 
-        instructions.Add(instr);
+        functionInstructions.Add(instr);
     }
 
     public void MakeSet(string name)
@@ -355,7 +354,7 @@ public class IRBuilder
         Instruction instr = new Instruction(InstrType.Set, variables[name]);
         instr.AddValue(new IRValue(name, IRValueType.Var));
         
-        instructions.Add(instr);
+        functionInstructions.Add(instr);
     }
 
 }

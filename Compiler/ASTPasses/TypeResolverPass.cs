@@ -52,7 +52,13 @@ public class TypeResolver : ASTVisitor
 
     public override void Visit(BinOp node)
     {
-        HashSet<TokenType> compareTypes = [TokenType.Lesser, TokenType.Greater, TokenType.LessEqual, TokenType.GreaterEqual];
+        HashSet<TokenType> compareTypes = 
+        [TokenType.Lesser, 
+        TokenType.Greater,
+        TokenType.LessEqual,
+        TokenType.GreaterEqual, 
+        TokenType.NotEqual,
+        TokenType.CompEqual];
 
         
 

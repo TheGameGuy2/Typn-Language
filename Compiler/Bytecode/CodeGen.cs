@@ -10,12 +10,12 @@ public class CodeGenerator
     private List<Instruction> irInstructions;
     private Dictionary<InstrType, byte> opcodes = new();
     private Dictionary<IRDataType, byte> dataTypeId = new(); //Data type id needed for some instr.
-    private Dictionary<string, int> varStackOffset = new(); //each variable has a stack offset.
+    private Dictionary<string, Int32> varStackOffset = new(); //each variable has a stack offset.
     private Dictionary<string, byte[]> labelDict = new(); //stores: label -> address in bytes.
     
     //In case a label is defined later, we store the index of the instructions in need of the label's value.
     //When the label is defined, we go through the list of subscribers and add the address from labeldict to the instruction.
-    private Dictionary<string, List<int>> subscriberDict = new(); //LabelName -> List[subscribed addresses] (points to )
+    private Dictionary<string, List<Int32>> subscriberDict = new(); //LabelName -> List[subscribed addresses] (points to )
 
     
     private int currentStackBase = 0; //stack frame pointer for data stack
@@ -24,7 +24,7 @@ public class CodeGenerator
     public CodeGenerator(List<Instruction> instructions)
     {
         irInstructions = instructions;
-
+        
         const byte dataTypeCount = 3;
 
         //We generate an instruction type for each data type, that's why we end up with datatypes*instructioncount
@@ -192,13 +192,14 @@ public class CodeGenerator
     {
         switch(type)
         {
+            
             case IRDataType.Float:
                 float val = float.Parse(value, CultureInfo.InvariantCulture);
                 return BitConverter.GetBytes(val);
             
 
             case IRDataType.Int:
-                int ival = int.Parse(value);
+                Int32 ival = Int32.Parse(value);
                 return BitConverter.GetBytes(ival);
 
             case IRDataType.Bool:

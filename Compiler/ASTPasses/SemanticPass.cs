@@ -7,7 +7,9 @@ public enum ContextType : byte
 {
     TopLevel,
     While,
+    WhileCond,
     If,
+    IfCond,
     Fnc
 }
 
