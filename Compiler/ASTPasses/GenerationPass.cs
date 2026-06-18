@@ -29,6 +29,7 @@ public class IRGeneratePass : ASTVisitor
 
     public override void Visit(BinOp node)
     {
+        
         builder.MakeOperator(IRBuilder.GetInstrFromOp(node.value));
     }
 
