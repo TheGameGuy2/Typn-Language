@@ -13,13 +13,14 @@ string helpMessage =
 + "\nOptions:"
 + "\n-debug              forces compiler to output Tokens,AST,IR."
 + "\n-o [FILE_PATH]      specifies bytecode output file."
-+ "\n-run                executes bytecode after compilation.";
++ "\n-run                executes bytecode after compilation."
++ "\n-dump               dumps IR into dbg_dump.tyr";
 
 string path;
 string outputName = "out.tpc"; //Default output name
 bool debugMode = false; //Output more information during compilation
 bool doRun = false; //Start VM after compiling
-
+bool dumpIR = false;
 
 if (args.Length == 0)
 {
@@ -46,6 +47,10 @@ for (int i = 0; i < args.Length; i++)
     {
         debugMode = true;
     }
+    else if (arg == "-dump")
+    {
+        dumpIR = true;
+    }
     else if (arg == "-run")
     {
         doRun = true;
@@ -65,6 +70,10 @@ for (int i = 0; i < args.Length; i++)
     }
 }
 
+if(2<3 && ((true && true) || 3>4))
+{
+    
+}
 
 if (!File.Exists(args[0]))
 {
@@ -141,6 +150,11 @@ foreach (ASTNode node in nodes)
 
 builder.EndFunction();
 
+if(dumpIR)
+{
+    File.WriteAllText("dbg_dump.tyr",builder.GetInstructionsStr());
+}
+
 if (debugMode)
 {
     Console.WriteLine("--- Stage 1 IR ---");
@@ -177,7 +191,7 @@ if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
     vmPath = "./Runtime/vm";
 }
 
-if (!Path.Exists(vmPath))
+if (doRun && !Path.Exists(vmPath))
 {
     ErrorHandler.ThrowCLIError($"Runtime path: {vmPath} not found.");
 }

@@ -132,6 +132,16 @@ public class IRBuilder
         }
     }
 
+    public string GetInstructionsStr()
+    {
+        string res = "";
+        foreach(Instruction inst in instructions)
+        {
+            res+=inst.ToString() + "\n";
+        }
+        return res;
+    }
+
     
     public void StartFunction()
     {

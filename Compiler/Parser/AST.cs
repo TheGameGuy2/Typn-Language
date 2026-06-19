@@ -86,9 +86,6 @@ public class BinOp : ASTNode
 
     public override void AcceptVisitor(ASTVisitor visitor)
     {
-
-        right.AcceptVisitor(visitor);
-        left.AcceptVisitor(visitor);
         visitor.Visit(this);
     }
 
@@ -195,7 +192,6 @@ public class NegateNode : ASTNode
     public override void AcceptVisitor(ASTVisitor visitor)
     {
         visitor.Visit(this);
-        Expr.AcceptVisitor(visitor);
     }
     
 
@@ -228,7 +224,6 @@ public class NotNode : ASTNode
 
     public override void AcceptVisitor(ASTVisitor visitor)
     {
-        Expr.AcceptVisitor(visitor);
         visitor.Visit(this);
     }
 }
@@ -310,7 +305,6 @@ public class VariableNode : ASTNode
     public override void AcceptVisitor(ASTVisitor visitor)
     {
 
-        varValueExpr.AcceptVisitor(visitor);
         visitor.Visit(this);
     }
 
@@ -347,7 +341,6 @@ public class AssignNode : ASTNode
     public override void AcceptVisitor(ASTVisitor visitor)
     {
         //because name gets written to, we only visit name in SymbolResolver
-        assignExpr.AcceptVisitor(visitor);
         visitor.Visit(this);
     }
 }
@@ -397,12 +390,7 @@ public class CallNode : ASTNode
 
     public override void AcceptVisitor(ASTVisitor visitor)
     {
-        foreach(ASTNode node in callExpr)
-        {
-            node.AcceptVisitor(visitor);
-        }
         visitor.Visit(this);
-        //caller.AcceptVisitor(visitor);
     }
 }
 
@@ -440,11 +428,6 @@ public class BlockNode : ASTNode
     public override void AcceptVisitor(ASTVisitor visitor)
     {
         visitor.Visit(this);
-
-        foreach(ASTNode node in statements)
-        {
-            node.AcceptVisitor(visitor);
-        }
 
         visitor.Exit(this);
 
@@ -500,9 +483,6 @@ public class IfNode : ASTNode
     {
 
         visitor.Visit(this);
-        expr.AcceptVisitor(visitor);
-        body.AcceptVisitor(visitor);
-        elseBlock?.AcceptVisitor(visitor);
     }
 }
 
@@ -553,8 +533,6 @@ public class WhileNode : ASTNode
     public override void AcceptVisitor(ASTVisitor visitor)
     {
         visitor.Visit(this);
-        expr.AcceptVisitor(visitor);
-        body.AcceptVisitor(visitor);
     }
 }
 

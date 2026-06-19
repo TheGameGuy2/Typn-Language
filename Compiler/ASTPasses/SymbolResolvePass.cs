@@ -33,7 +33,12 @@ public class SymbolResolver : ASTVisitor
 
     public override void Visit(BlockNode node)
     {
+
         EnterScope();
+        foreach(ASTNode n in node.statements)
+        {
+            n.AcceptVisitor(this);
+        }
     }
 
     public override void Exit(BlockNode node)
@@ -41,11 +46,46 @@ public class SymbolResolver : ASTVisitor
         LeaveScope();
     }
 
-    
+    public override void Visit(BinOp node)
+    {
+        node.right.AcceptVisitor(this);
+        node.left.AcceptVisitor(this);
+    }
+
+    public override void Visit(IfNode node)
+    {
+        node.expr.AcceptVisitor(this);
+        node.body.AcceptVisitor(this);
+    }
+
+    public override void Visit(NotNode node)
+    {
+        node.Expr.AcceptVisitor(this);
+    }
+
+    public override void Visit(CallNode node)
+    {
+        foreach(ASTNode n in node.callExpr)
+        {
+            n.AcceptVisitor(this);
+        }
+    }
+
+    public override void Visit(NegateNode node)
+    {
+        node.Expr.AcceptVisitor(this);
+    }
+
+    public override void Visit(WhileNode node)
+    {
+        node.expr.AcceptVisitor(this);
+        node.body.AcceptVisitor(this);
+    }
 
     public override void Visit(VariableNode node)
     {
-        
+        node.varValueExpr.AcceptVisitor(this);
+
         IRDataType dataType = IRBuilder.GetDTFromToken(node.dataTypeToken);
         string name = node.name.value.value;
 
@@ -63,6 +103,7 @@ public class SymbolResolver : ASTVisitor
     public override void Visit(AssignNode node)
     {
         node.name.AcceptVisitor(this);
+        node.assignExpr.AcceptVisitor(this);
     }
 
     public override void Visit(Name node)

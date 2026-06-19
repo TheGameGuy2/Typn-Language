@@ -60,7 +60,8 @@ public class TypeResolver : ASTVisitor
         TokenType.NotEqual,
         TokenType.CompEqual];
 
-        
+        node.right.AcceptVisitor(this);
+        node.left.AcceptVisitor(this);
 
         if(!acceptedOps.TryGetValue(new(node.left.dataType,node.right.dataType),out var supportedOps))
         {
@@ -90,6 +91,7 @@ public class TypeResolver : ASTVisitor
 
     public override void Visit(NotNode node)
     {
+        node.Expr.AcceptVisitor(this);
         node.dataType = IRDataType.Bool;
         if(node.Expr.dataType != IRDataType.Bool)
         {
@@ -104,6 +106,9 @@ public class TypeResolver : ASTVisitor
 
     public override void Visit(VariableNode node)
     {
+        node.name.AcceptVisitor(this);
+        node.varValueExpr.AcceptVisitor(this);
+
         Symbol? varSymbol = node.name.resolvedSymbol; 
         if(varSymbol!=null)
         {
@@ -129,6 +134,9 @@ public class TypeResolver : ASTVisitor
 
     public override void Visit(AssignNode node)
     {
+        node.name.AcceptVisitor(this);
+        node.assignExpr.AcceptVisitor(this);
+        
         if(node.assignExpr.dataType != node.name.dataType)
         {
             ErrorHandler.AddError(ErrorType.TypeError, node.GetLine(), $"Can not assign {node.name.dataType} to {node.assignExpr.dataType}");

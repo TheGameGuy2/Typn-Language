@@ -1,6 +1,6 @@
 ###
 
-Typhon's syntax is quite similair to the C syntax most people are used to.
+Typn's syntax is quite similair to the C syntax most people are used to.
 
 &&,|| are still WIP, might only work with bool.
 

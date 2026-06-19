@@ -29,12 +29,17 @@ public class IRGeneratePass : ASTVisitor
 
     public override void Visit(BinOp node)
     {
-        
+        node.right.AcceptVisitor(this);
+        node.left.AcceptVisitor(this);
         builder.MakeOperator(IRBuilder.GetInstrFromOp(node.value));
     }
 
     public override void Visit(CallNode node)
     {
+        foreach(ASTNode n in node.callExpr)
+        {
+            n.AcceptVisitor(this);
+        }
         
         builder.MakeCall(node.caller.value.value);
     }
@@ -44,7 +49,18 @@ public class IRGeneratePass : ASTVisitor
         builder.MakeLoad(node.resolvedSymbol.id); 
     }
 
+    public override void Visit(NegateNode node)
+    {
+        node.Expr.AcceptVisitor(this);
+        builder.MakeConstant("-1",builder.GetLastDT());
+        builder.MakeOperator(InstrType.Mul);
+    }
 
+    public override void Visit(NotNode node)
+    {
+        node.Expr.AcceptVisitor(this);
+        builder.MakeNot();
+    }
 
     public override void Visit(ConstValue node)
     {
@@ -54,17 +70,25 @@ public class IRGeneratePass : ASTVisitor
     public override void Visit(VariableNode node)
     {
         if(node.name.resolvedSymbol == null){ErrorHandler.ThrowCLIError("[Internal] Unresolved symbol in ir gen.");}
+
+        node.varValueExpr.AcceptVisitor(this);
         builder.MakeDefine(node.name.resolvedSymbol.id, node.name.resolvedSymbol.dataType);
-        builder.MakeSet(node.name.resolvedSymbol.id);
+
+        if(!(node.varValueExpr is NullValue))
+        {    
+            builder.MakeSet(node.name.resolvedSymbol.id);
+        }
     }
 
     public override void Visit(AssignNode node)
     {
+        node.assignExpr.AcceptVisitor(this);
         builder.MakeSet(node.name.resolvedSymbol.id);
     }
 
     public override void Visit(WhileNode node)
     {
+
         contexts.Push(new(){enterLabel = builder.NewLabelName(), 
                             escapeLabel = builder.NewLabelName(),
                             type = ContextType.WhileCond});
@@ -72,6 +96,9 @@ public class IRGeneratePass : ASTVisitor
         curLoopEnter = contexts.Peek().enterLabel;
         curLoopEscape = contexts.Peek().escapeLabel;
         builder.MakeLabel(contexts.Peek().enterLabel);
+
+        node.expr.AcceptVisitor(this);
+        node.body.AcceptVisitor(this);
     }
 
     public override void Visit(BreakNode node)
@@ -84,9 +111,16 @@ public class IRGeneratePass : ASTVisitor
         builder.MakeJump(curLoopEnter);
     }
 
+    
+
+    
+
     public override void Visit(IfNode node)
     {
         contexts.Push(new(){escapeLabel = builder.NewLabelName(), type = ContextType.IfCond});
+
+        node.expr.AcceptVisitor(this);
+        node.body.AcceptVisitor(this);
     }
 
     public override void Visit(BlockNode node)
@@ -113,6 +147,11 @@ public class IRGeneratePass : ASTVisitor
             builder.MakeCmp();
             builder.MakeJmpFalse(ifCtx.escapeLabel);
 
+        }
+
+        foreach(ASTNode n in node.statements)
+        {
+            n.AcceptVisitor(this);
         }
     }
 
