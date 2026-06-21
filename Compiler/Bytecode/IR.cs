@@ -338,7 +338,11 @@ public class IRBuilder
 
     public void MakeOperator(InstrType op)
     {
-        Instruction instr = new(op, functionInstructions[^1].instrDataType);
+        InstrType[] logInst = [InstrType.And, InstrType.Or, InstrType.Not];
+        
+        IRDataType type = logInst.Contains(op) ? IRDataType.Bool : functionInstructions[^1].instrDataType;
+        
+        Instruction instr = new(op, type);
 
         functionInstructions.Add(instr);
     }

@@ -153,8 +153,29 @@ public partial class Parser
         }
 
         ASTNode block = MakeBlock();
+        
+        IfNode newNode = new(expr, block);
 
-        return new IfNode(expr, block);
+        if(Peek(2).type == TokenType.Else)
+        {
+            Consume();
+            Expect(TokenType.NewLine);
+
+            Consume();
+            
+            if(Peek().type == TokenType.If)
+            {
+                newNode.elseBlock = MakeIf();
+            }
+            else
+            {   
+                Consume();
+                Expect(TokenType.NewLine, "Newline after else");
+                newNode.elseBlock = MakeBlock();
+            }
+        }
+
+        return newNode;
 
 
     }

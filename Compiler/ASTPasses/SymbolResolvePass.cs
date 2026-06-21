@@ -56,6 +56,7 @@ public class SymbolResolver : ASTVisitor
     {
         node.expr.AcceptVisitor(this);
         node.body.AcceptVisitor(this);
+        node.elseBlock?.AcceptVisitor(this);
     }
 
     public override void Visit(NotNode node)

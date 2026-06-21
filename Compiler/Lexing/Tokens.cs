@@ -35,6 +35,7 @@ public enum TokenType
     Comma,
     If,
     While,
+    Else,
     Break,
     Continue,
     Return,

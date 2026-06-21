@@ -34,6 +34,7 @@ public class IRGeneratePass : ASTVisitor
         builder.MakeOperator(IRBuilder.GetInstrFromOp(node.value));
     }
 
+
     public override void Visit(CallNode node)
     {
         foreach(ASTNode n in node.callExpr)
@@ -98,7 +99,19 @@ public class IRGeneratePass : ASTVisitor
         builder.MakeLabel(contexts.Peek().enterLabel);
 
         node.expr.AcceptVisitor(this);
+        
+        builder.MakeCmp();
+        builder.MakeJmpFalse(curLoopEscape);
+
+        contexts.Pop();
+        contexts.Push(new(){enterLabel = curLoopEnter,
+                            escapeLabel = curLoopEscape,
+                            type = ContextType.While});
+
         node.body.AcceptVisitor(this);
+
+        builder.MakeJump(curLoopEnter);
+        builder.MakeLabel(curLoopEscape);
     }
 
     public override void Visit(BreakNode node)
@@ -117,38 +130,38 @@ public class IRGeneratePass : ASTVisitor
 
     public override void Visit(IfNode node)
     {
-        contexts.Push(new(){escapeLabel = builder.NewLabelName(), type = ContextType.IfCond});
+        string elseLabel = builder.NewLabelName();
+        string endLabel = builder.NewLabelName(); //End label is jumped to when condition is true, after block.
+
+        contexts.Push(new(){escapeLabel = elseLabel, type = ContextType.IfCond});
 
         node.expr.AcceptVisitor(this);
+        
+        contexts.Pop();
+        contexts.Push(new(){escapeLabel = elseLabel, type = ContextType.If});
+
+        builder.MakeCmp();
+        builder.MakeJmpFalse(elseLabel);
+
         node.body.AcceptVisitor(this);
+
+        if(node.elseBlock != null)
+        {
+            builder.MakeJump(endLabel);
+            builder.MakeLabel(elseLabel);
+            node.elseBlock.AcceptVisitor(this);
+            builder.MakeLabel(endLabel);
+        }
+        else
+        {    
+            builder.MakeLabel(elseLabel);
+        }
+
+
     }
 
     public override void Visit(BlockNode node)
     {
-        if(contexts.Peek().type == ContextType.WhileCond)
-        {
-            Context whileCtx = contexts.Pop();
-
-            builder.MakeCmp();
-            builder.MakeJmpFalse(whileCtx.escapeLabel);
-
-            contexts.Push(new(){type = ContextType.While,
-                                enterLabel = whileCtx.enterLabel,
-                                escapeLabel = whileCtx.escapeLabel});
-        }
-        else if(contexts.Peek().type == ContextType.IfCond)
-        {
-            Context ifCtx = contexts.Pop();
-
-            contexts.Push(new(){type = ContextType.If,
-                                enterLabel = ifCtx.enterLabel,
-                                escapeLabel = ifCtx.escapeLabel});
-
-            builder.MakeCmp();
-            builder.MakeJmpFalse(ifCtx.escapeLabel);
-
-        }
-
         foreach(ASTNode n in node.statements)
         {
             n.AcceptVisitor(this);
@@ -158,21 +171,7 @@ public class IRGeneratePass : ASTVisitor
     public override void Exit(BlockNode node)
     {
         
-        if(contexts.Peek().type == ContextType.While)
-        {
-            builder.MakeJump(contexts.Peek().enterLabel);
-            builder.MakeLabel(contexts.Pop().escapeLabel);
-
-            if(contexts.Peek().type == ContextType.While)
-            {
-                curLoopEnter = contexts.Peek().enterLabel;
-                curLoopEscape = contexts.Peek().escapeLabel;
-            }
-        }
-        else if(contexts.Peek().type == ContextType.If)
-        {
-            builder.MakeLabel(contexts.Pop().escapeLabel);
-        }
+        
     }
 
 

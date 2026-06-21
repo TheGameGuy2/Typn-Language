@@ -79,8 +79,8 @@ public class BinOp : ASTNode
     public override void Show(int depth)
     {
         base.Show(depth);
-        left.Show(depth+1);
         right.Show(depth+1);
+        left.Show(depth+1);
 
     }
 
@@ -456,7 +456,7 @@ public class IfNode : ASTNode
         base.Show(depth);
         expr.Show(depth + 1);
         body.Show(depth + 1);
-
+        elseBlock?.Show(depth+1);
     }
 
     public override void MakeInstruction(IRBuilder builder)

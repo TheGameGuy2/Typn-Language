@@ -60,6 +60,7 @@ public class Tokenizer
 
         keywordMap["if"] = new Token(TokenType.If, "if");
         keywordMap["while"] = new Token(TokenType.While, "while");
+        keywordMap["else"] = new Token(TokenType.Else, "else");
 
         keywordMap["break"] = new Token(TokenType.Break, "break");
         keywordMap["continue"] = new Token(TokenType.Continue, "continue");
