@@ -14,8 +14,7 @@ public class IRGeneratePass : ASTVisitor
     private Stack<Context> contexts = new(); 
 
     //both used for the current loop, because loop_escape,loop_enter change in if.
-    private string curLoopEnter;
-    private string curLoopEscape;
+    
 
 
     public IRGeneratePass(IRBuilder builder)
@@ -89,39 +88,51 @@ public class IRGeneratePass : ASTVisitor
 
     public override void Visit(WhileNode node)
     {
-
+        //Entering while condition context
         contexts.Push(new(){enterLabel = builder.NewLabelName(), 
                             escapeLabel = builder.NewLabelName(),
                             type = ContextType.WhileCond});
 
-        curLoopEnter = contexts.Peek().enterLabel;
-        curLoopEscape = contexts.Peek().escapeLabel;
-        builder.MakeLabel(contexts.Peek().enterLabel);
+        //Storing escape and enter labels.
+        string curLoopEnter = contexts.Peek().enterLabel;
+        string curLoopEscape = contexts.Peek().escapeLabel;
 
+        //Making label on top of loop condition
+        builder.MakeLabel(curLoopEnter);
+
+        //Loop condition
         node.expr.AcceptVisitor(this);
         
         builder.MakeCmp();
         builder.MakeJmpFalse(curLoopEscape);
 
-        contexts.Pop();
+        contexts.Pop(); //Leaving loop condition context
+
+        //Entered while body context.
         contexts.Push(new(){enterLabel = curLoopEnter,
                             escapeLabel = curLoopEscape,
                             type = ContextType.While});
 
+
+
         node.body.AcceptVisitor(this);
 
+        contexts.Pop(); //Leave while context
+
+        //Loop end
         builder.MakeJump(curLoopEnter);
         builder.MakeLabel(curLoopEscape);
+
     }
 
     public override void Visit(BreakNode node)
     {
-        builder.MakeJump(curLoopEscape);
+        builder.MakeJump(contexts.Peek().escapeLabel);
     }
 
     public override void Visit(ContinueNode node)
     {
-        builder.MakeJump(curLoopEnter);
+        builder.MakeJump(contexts.Peek().enterLabel);
     }
 
     
@@ -131,30 +142,37 @@ public class IRGeneratePass : ASTVisitor
     public override void Visit(IfNode node)
     {
         string elseLabel = builder.NewLabelName();
-        string endLabel = builder.NewLabelName(); //End label is jumped to when condition is true, after block.
+        string endLabel = builder.NewLabelName(); //End label is jumped to when condition is true -> skip else block
 
         contexts.Push(new(){escapeLabel = elseLabel, type = ContextType.IfCond});
 
+        //Making if condition
         node.expr.AcceptVisitor(this);
         
+        //Enter if body context
         contexts.Pop();
         contexts.Push(new(){escapeLabel = elseLabel, type = ContextType.If});
 
+        //Check if condition
         builder.MakeCmp();
         builder.MakeJmpFalse(elseLabel);
 
         node.body.AcceptVisitor(this);
 
+        contexts.Pop(); //leave if context
+
         if(node.elseBlock != null)
         {
+            //If has else: adding jump to end of previous block, skipping else
             builder.MakeJump(endLabel);
             builder.MakeLabel(elseLabel);
-            node.elseBlock.AcceptVisitor(this);
-            builder.MakeLabel(endLabel);
+
+            node.elseBlock.AcceptVisitor(this); //else block
+            builder.MakeLabel(endLabel); //end label after else block
         }
         else
         {    
-            builder.MakeLabel(elseLabel);
+            builder.MakeLabel(elseLabel); //No else, using the else label as the end.
         }
 
 
@@ -167,13 +185,5 @@ public class IRGeneratePass : ASTVisitor
             n.AcceptVisitor(this);
         }
     }
-
-    public override void Exit(BlockNode node)
-    {
-        
-        
-    }
-
-
 
 }

@@ -164,8 +164,7 @@ public class IRBuilder
         }
     }
 
-    //TODO: Remove label logic from First IR pass, patch labels after optim. later.
-    //TODO: Do that! patch labels in Code Gen.
+    
     public string NewLabelName()
     {
         labelCounter++;

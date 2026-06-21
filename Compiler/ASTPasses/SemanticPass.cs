@@ -50,6 +50,7 @@ public class SemanticAnalizer : ASTVisitor
     public override void Visit(IfNode node)
     {
         scopes.Add(new(){type=ContextType.If});
+        node.elseBlock?.AcceptVisitor(this);
     }
 
     public override void Exit(BlockNode node)
