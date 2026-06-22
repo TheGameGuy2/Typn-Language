@@ -5,17 +5,10 @@ using Errors;
 
 namespace ASTPasses;
 
-//WIP - Generation is done in AST for now.
-// TODO: Do this, remember to track context and put var defs before loops
 public class IRGeneratePass : ASTVisitor
-{
-    
+{    
     private readonly IRBuilder builder;
     private Stack<Context> contexts = new(); 
-
-    //both used for the current loop, because loop_escape,loop_enter change in if.
-    
-
 
     public IRGeneratePass(IRBuilder builder)
     {
