@@ -2,6 +2,7 @@
 #pragma once
 #include <cstdint>
 #include <iostream>
+#include <cstring>
 #include <vector>
 #define print(x) std::cout<< x;
 #define NL std::cout << "\n";
@@ -54,7 +55,8 @@ template<typename T>
 inline Value FetchBytecodeValue(void* startAdr, uint32_t* current)
 {
 	*current += sizeof(T)-1; //-1 because current gets increased at start of exe loop.
-	Value val = (Value)(*(T*)startAdr);
+	Value val;
+	std::memcpy(&val, startAdr,sizeof(T));
 	return val;
 }
 
@@ -423,19 +425,18 @@ inline void Define_bool(Stack& memStack)
 
 }
 
-template<typename T>
+
 inline void Set(uint32_t* current, Stack& opStack, Stack& memStack, std::vector<byte>& bytecode)
 {
 	*current+=1;
-	Value setAdr = FetchBytecodeValue<T>(&(bytecode[*current]),current);
+	Value setAdr = FetchBytecodeValue<uint32_t>(&(bytecode[*current]),current);
 	((Value*)memStack.values)[setAdr.intVal] = PopStack(opStack);
 }
 
-template<typename T>
 inline void Load(uint32_t* current, Stack& opStack, Stack& memStack, std::vector<byte>& bytecode)
 {
 	*current+=1;
-	Value getAdr = FetchBytecodeValue<T>(&(bytecode[*current]),current);
+	Value getAdr = FetchBytecodeValue<uint32_t>(&(bytecode[*current]),current);
 	PushStack(((Value*)memStack.values)[getAdr.intVal], opStack);
 }
 
@@ -720,15 +721,15 @@ Or_bool(operationStack);
 goto start;
 
 _Set_int:
-Set<int32_t>(&current,operationStack,memoryStack,bytecode);
+Set(&current,operationStack,memoryStack,bytecode);
 goto start;
 
 _Set_float:
-Set<float>(&current,operationStack,memoryStack,bytecode);
+Set(&current,operationStack,memoryStack,bytecode);
 goto start;
 
 _Set_bool:
-Set<bool>(&current,operationStack,memoryStack,bytecode);
+Set(&current,operationStack,memoryStack,bytecode);
 goto start;
 
 _Call_int:
@@ -845,15 +846,15 @@ Push<bool>(&current,operationStack,bytecode);
 goto start;
 
 _Load_int:
-Load<int32_t>(&current,operationStack,memoryStack,bytecode);
+Load(&current,operationStack,memoryStack,bytecode);
 goto start;
 
 _Load_float:
-Load<float>(&current,operationStack,memoryStack,bytecode);
+Load(&current,operationStack,memoryStack,bytecode);
 goto start;
 
 _Load_bool:
-Load<bool>(&current,operationStack,memoryStack,bytecode);
+Load(&current,operationStack,memoryStack,bytecode);
 goto start;
 
 _Jmp_int:

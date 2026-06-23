@@ -152,11 +152,11 @@ def generate_define_methods(datatypes):
 
 def generate_set_methods():
     res = '''
-template<typename T>
+
 inline void Set(uint32_t* current, Stack& opStack, Stack& memStack, std::vector<byte>& bytecode)
 {
 	*current+=1;
-	Value setAdr = FetchBytecodeValue<T>(&(bytecode[*current]),current);
+	Value setAdr = FetchBytecodeValue<uint32_t>(&(bytecode[*current]),current);
 	((Value*)memStack.values)[setAdr.intVal] = *PopStack(opStack);
 }
 '''
@@ -215,11 +215,10 @@ inline void {cmp}_{dt}(Stack& opStack)
 
 def generate_load():
     res = '''
-template<typename T>
 inline void Load(uint32_t* current, Stack& opStack, Stack& memStack, std::vector<byte>& bytecode)
 {
 	*current+=1;
-	Value getAdr = FetchBytecodeValue<T>(&(bytecode[*current]),current);
+	Value getAdr = FetchBytecodeValue<uint32_t>(&(bytecode[*current]),current);
 	PushStack(((Value*)memStack.values)[getAdr.intVal], opStack);
 }
 '''
